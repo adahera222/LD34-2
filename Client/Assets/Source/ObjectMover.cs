@@ -13,6 +13,7 @@ public class ObjectMover : MonoBehaviour
 	private Quaternion _originalRotation = Quaternion.identity;
 	private Vector3 _targetPosition = Vector3.zero;
 	private Quaternion _targetRotation = Quaternion.identity;
+	private float _peakHeight = 0.0f;
 	private OnMoveComplete _onMoveComplete = null;
 	
 	// Use this for initialization
@@ -30,7 +31,7 @@ public class ObjectMover : MonoBehaviour
 			float positionDelta = Mathf.SmoothStep( 0.0f, 1.0f, _moveDelta );
 			float rotationDelta = Mathf.SmoothStep( 0.0f, 1.0f, Mathf.Clamp01( _moveDelta * RotationMultiplier ) );
 			
-			transform.position = Vector3.Lerp( _originalPosition, _targetPosition, positionDelta );
+			transform.position = Vector3.Lerp( _originalPosition, _targetPosition, positionDelta ) + new Vector3( 0.0f, Mathf.Sin ( positionDelta * Mathf.PI ) * _peakHeight, 0.0f );
 			transform.rotation = Quaternion.Slerp( _originalRotation, _targetRotation, rotationDelta );
 			
 			// Increase move delta.
@@ -43,7 +44,7 @@ public class ObjectMover : MonoBehaviour
 	}
 	
 	// Move object to target.
-	public void Move( Vector3 targetPosition, Quaternion targetRotation, OnMoveComplete onMoveComplete )
+	public void Move( Vector3 targetPosition, Quaternion targetRotation, float peakHeight, OnMoveComplete onMoveComplete )
 	{
 		this.enabled = true;
 		_moveDelta = 0.0f;
@@ -51,6 +52,7 @@ public class ObjectMover : MonoBehaviour
 		_originalRotation = transform.rotation;
 		_targetPosition = targetPosition;
 		_targetRotation = targetRotation;
+		_peakHeight = peakHeight;
 		_onMoveComplete = onMoveComplete;				
 	}
 }

@@ -3,12 +3,6 @@ using System.Collections;
 
 public class BoardPiece : MonoBehaviour
 {
-	/// <summary>
-	/// Is the board piece fixed? I.e. can't be moved?
-	/// </summary> 
-	public bool IsFixed = false;
-
-	
 	private int _x = 0;
 	private int _y = 0;
 	
@@ -39,6 +33,9 @@ public class BoardPiece : MonoBehaviour
 		
 		// Setup position.
 		transform.localPosition = new Vector3( (float)X, 0.0f, (float)Y );
+		
+		// Setup name for easy debugging.
+		this.gameObject.name = string.Format( "BoardPiece({0},{1})", _x, _y );
 	}
 	
 	
