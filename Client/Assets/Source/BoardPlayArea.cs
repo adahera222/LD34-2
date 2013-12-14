@@ -4,8 +4,9 @@ using System.Collections.Generic;
 
 public class BoardPlayArea : MonoBehaviour 
 {
-	public GameObject TemplatePiece;
-	public GameObject TemplatePiecePlayLocation;
+	public BoardPiece TemplatePiece;
+	public BoardPiecePlayLocation TemplatePiecePlayLocation;
+	public List<BoardPiece> TemplateBoardPieces;
 	
 	public enum PlayAreaState
 	{
@@ -17,10 +18,10 @@ public class BoardPlayArea : MonoBehaviour
 	private PlayAreaState _playAreaState = PlayAreaState.Idle;
 	
 	// Pieces in pile to select from.
-	private List<GameObject> _boardPiecePile = new List<GameObject>();
+	private List<BoardPiece> _boardPiecePile = new List<BoardPiece>();
 	
 	// Played pieces.
-	private GameObject[][] _boardPieceField = null;
+	private BoardPiece[][] _boardPieceField = null;
 	
 	private Quaternion _pileRotation = Quaternion.Euler( new Vector3( 180.0f, 0.0f, 0.0f ) );
 	
@@ -30,9 +31,9 @@ public class BoardPlayArea : MonoBehaviour
 		// Create board pieces.
 		for( int i = 0; i < 60; ++i )
 		{
-			var boardPieceObject = Object.Instantiate( TemplatePiece ) as GameObject;
+			var boardPieceObject = Object.Instantiate( TemplatePiece.gameObject ) as GameObject;
 			var boardPiece = boardPieceObject.GetComponent< BoardPiece >();
-			_boardPiecePile.Add( boardPieceObject );
+			_boardPiecePile.Add( boardPiece );
 			boardPiece.SetupPiece( this, i );
 			
 			var position = GetPilePosition();
@@ -52,7 +53,7 @@ public class BoardPlayArea : MonoBehaviour
 					  ( y >= 0 && y < Size ) ) &&
 					( ( x != 3 && y != 3 ) ) )
 				{
-					var boardPieceObject = Object.Instantiate( TemplatePiecePlayLocation ) as GameObject;
+					var boardPieceObject = Object.Instantiate( TemplatePiecePlayLocation.gameObject ) as GameObject;
 					var boardPiece = boardPieceObject.GetComponent< BoardPiecePlayLocation >();
 			
 					boardPiece.X = x;
@@ -64,10 +65,10 @@ public class BoardPlayArea : MonoBehaviour
 		}
 		
 		// Create board field.
-		_boardPieceField = new GameObject[Size][];
+		_boardPieceField = new BoardPiece[Size][];
 		for( int i = 0; i < Size; ++i )
 		{
-			_boardPieceField[i] = new GameObject[Size];
+			_boardPieceField[i] = new BoardPiece[Size];
 		}
 		
 		// Play pieces.
@@ -142,7 +143,7 @@ public class BoardPlayArea : MonoBehaviour
 			x = Mathf.Clamp ( x, -1, Size );
 			y = Mathf.Clamp ( y, -1, Size );
 			
-			GameObject boardPieceObject;
+			BoardPiece boardPieceObject;
 			Vector3 position;
 			ObjectMover objectMover;
 

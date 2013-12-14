@@ -6,11 +6,11 @@ public class BoardPiece : MonoBehaviour
 	[System.Flags]
 	public enum Connectivity
 	{
+		None = 0x0,
 		Top = 0x1,
 		Bottom = 0x2,
 		Left = 0x4,
 		Right = 0x8,
-		Invalid = 0x10
 	}
 	
 	private int _id = 0;
@@ -27,12 +27,14 @@ public class BoardPiece : MonoBehaviour
 	[EnumFlags]
 	public Connectivity RightEdge;
 	
-	
 	public Transform TopEdgePieceTransform;
 	public Transform BottomEdgePieceTransform;
 	public Transform LeftEdgePieceTransform;
 	public Transform RightEdgePiecePTransform;
 	
+	public bool IsStart = false;
+	public int TotalInDeck = 0;
+	public int TotalWithEventsInDeck = 0;	
 	
 	private Connectivity GetConnectivity(int index)
 	{
@@ -48,7 +50,7 @@ public class BoardPiece : MonoBehaviour
 			return RightEdge;
 		}
 		
-		return Connectivity.Invalid;
+		return Connectivity.None;
 	}
 	
 	private Transform GetEdgePieceTransform(int index)
