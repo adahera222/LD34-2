@@ -510,10 +510,10 @@ public class BoardPlayArea : MonoBehaviour
 						}						
 					}
 				}
-				
+
+				// If we didn't move, break out.
 				if( lowestDistance == _boardPieceField[ currCoord.x ][ currCoord.y ].PathNodes[ currCoord.edge ].TentativeDistance )
 				{
-					Debug.Log ( "Fail." );
 					break;
 				}
 				
@@ -523,8 +523,9 @@ public class BoardPlayArea : MonoBehaviour
 			
 			// Reverse so we can traverse it.
 			path.Reverse();
+			path.RemoveAt(0);
 			
-			return path;
+			return path.Count > 0 ? path : null;
 		}
 		
 		return null;		
