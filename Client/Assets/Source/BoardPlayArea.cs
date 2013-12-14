@@ -14,7 +14,7 @@ public class BoardPlayArea : MonoBehaviour
 		Idle,
 		PieceSelected
 	}
-	
+		
 	public int Size = 7;
 	
 	private PlayAreaState _playAreaState = PlayAreaState.Idle;
@@ -26,16 +26,8 @@ public class BoardPlayArea : MonoBehaviour
 	// Played pieces.
 	private GameObject[][] _boardPieceField = null;
 	
-	// Get piece position.
-	Vector3 GetPiecePosition( int x, int y )
-	{
-		// Centre x + y.
-		x = x - ( Size / 2 );
-		y = y - ( Size / 2 );
-		
-		return new Vector3( (float)x, 0.0f, (float)y );
-	}
-		
+	private Quaternion _pileRotation = Quaternion.Euler( new Vector3( 180.0f, 0.0f, 0.0f ) );
+	
 	// Use this for initialization
 	void Start ()
 	{
@@ -47,8 +39,9 @@ public class BoardPlayArea : MonoBehaviour
 			_boardPiecePile.Add( boardPieceObject );
 			boardPiece.SetupPiece( this, i );
 			
-			var position = GetPiecePosition( -1, Size / 2 );
+			var position = GetPilePosition();
 			boardPiece.transform.localPosition = position;			
+			boardPiece.transform.localRotation = _pileRotation;
 		}
 		
 		// Create board field.
@@ -76,7 +69,7 @@ public class BoardPlayArea : MonoBehaviour
 			case PlayAreaState.Idle:
 			{
 				if( Input.GetMouseButtonDown( 0 ) )
-				{	
+				{
 					var ray = Camera.main.ScreenPointToRay( Input.mousePosition );
 					var rayHits = Physics.RaycastAll( ray, Mathf.Infinity, 1 << Layers.Piece );
 					if( rayHits.Length > 0 )
@@ -84,6 +77,10 @@ public class BoardPlayArea : MonoBehaviour
 						var rayHit = rayHits[0];
 						_selectedObject = rayHit.collider.gameObject;
 						_playAreaState = PlayAreaState.PieceSelected;
+					}
+					else
+					{
+						PlayTopPiece( 3, Size );
 					}
 				}
 			}
@@ -111,6 +108,22 @@ public class BoardPlayArea : MonoBehaviour
 		}
 	}
 	
+	// Get piece position.
+	Vector3 GetPiecePosition(int x, int y)
+	{
+		// Centre x + y.
+		x = x - ( Size / 2 );
+		y = y - ( Size / 2 );
+		
+		return new Vector3((float)x, 0.0f, (float)y);
+	}
+	
+	Vector3 GetPilePosition()
+	{
+		return GetPiecePosition( -1, Size / 2 );
+	}
+		
+	// Play top piece to somewhere.
 	public void PlayTopPiece(int x, int y)
 	{
 		// Grab and move between lists.
@@ -125,6 +138,155 @@ public class BoardPlayArea : MonoBehaviour
 			var position = GetPiecePosition(x, y);
 			var objectMover = boardPieceObject.GetComponent< ObjectMover >();
 			objectMover.Move(position, Quaternion.identity, 1.0f, null);
+		}
+		else if( ( x >= 0 && x < Size ) ||
+			     ( y >= 0 && y < Size ) )
+		{
+			x = Mathf.Clamp ( x, -1, Size );
+			y = Mathf.Clamp ( y, -1, Size );
+			
+			GameObject boardPieceObject;
+			Vector3 position;
+			ObjectMover objectMover;
+
+			if( x == -1 ) // Left
+			{
+				for( int i = Size - 1; i >= 0; --i )
+				{
+					boardPieceObject = _boardPieceField[i][y];
+					_boardPieceField[i][y] = null;
+					
+					// Handle moving to grid coord + back to pile.
+					if( ( i + 1 ) < Size )
+					{
+						_boardPieceField[i + 1][y] = boardPieceObject;
+
+						position = GetPiecePosition(i + 1, y);
+						objectMover = boardPieceObject.GetComponent< ObjectMover >();
+						objectMover.Move(position, Quaternion.identity, 0.5f, null);
+					}
+					else
+					{
+						position = GetPilePosition();
+						objectMover = boardPieceObject.GetComponent< ObjectMover >();
+						objectMover.Move(position, _pileRotation, 2.0f, null);
+
+						_boardPiecePile.Add ( boardPieceObject );						
+					}
+				}
+				
+				// Add new piece.
+				boardPieceObject = _boardPiecePile[0];
+				_boardPiecePile.RemoveAt (0);
+				_boardPieceField[0][y] = boardPieceObject;
+				position = GetPiecePosition(0, y);
+				objectMover = boardPieceObject.GetComponent< ObjectMover >();
+				objectMover.Move(position, Quaternion.identity, 1.0f, null);
+			}
+			else if( x == Size ) // Right
+			{
+				for( int i = 0; i < Size; ++i )
+				{
+					boardPieceObject = _boardPieceField[i][y];
+					_boardPieceField[i][y] = null;
+					
+					// Handle moving to grid coord + back to pile.
+					if( ( i - 1 ) >= 0 )
+					{
+						_boardPieceField[i - 1][y] = boardPieceObject;
+
+						position = GetPiecePosition(i - 1, y);
+						objectMover = boardPieceObject.GetComponent< ObjectMover >();
+						objectMover.Move(position, Quaternion.identity, 0.5f, null);
+					}
+					else
+					{
+						position = GetPilePosition();
+						objectMover = boardPieceObject.GetComponent< ObjectMover >();
+						objectMover.Move(position, _pileRotation, 2.0f, null);
+
+						_boardPiecePile.Add ( boardPieceObject );						
+					}
+				}
+				
+				// Add new piece.
+				boardPieceObject = _boardPiecePile[0];
+				_boardPiecePile.RemoveAt (0);
+				_boardPieceField[Size - 1][y] = boardPieceObject;
+				position = GetPiecePosition(Size - 1, y);
+				objectMover = boardPieceObject.GetComponent< ObjectMover >();
+				objectMover.Move(position, Quaternion.identity, 1.0f, null);
+			}
+			else if( y == -1 ) // Top
+			{
+				for( int i = Size - 1; i >= 0; --i )
+				{
+					boardPieceObject = _boardPieceField[x][i];
+					_boardPieceField[x][i] = null;
+					
+					// Handle moving to grid coord + back to pile.
+					if( ( i + 1 ) < Size )
+					{
+						_boardPieceField[x][i + 1] = boardPieceObject;
+
+						position = GetPiecePosition(x, i + 1);
+						objectMover = boardPieceObject.GetComponent< ObjectMover >();
+						objectMover.Move(position, Quaternion.identity, 0.5f, null);
+					}
+					else
+					{
+						position = GetPilePosition();
+						objectMover = boardPieceObject.GetComponent< ObjectMover >();
+						objectMover.Move(position, _pileRotation, 2.0f, null);
+
+						_boardPiecePile.Add ( boardPieceObject );						
+					}
+				}
+				
+				// Add new piece.
+				boardPieceObject = _boardPiecePile[0];
+				_boardPiecePile.RemoveAt (0);
+				_boardPieceField[x][0] = boardPieceObject;
+				position = GetPiecePosition(x, 0);
+				objectMover = boardPieceObject.GetComponent< ObjectMover >();
+				objectMover.Move(position, _pileRotation, 1.0f, null);
+			}
+			else if( y == Size ) // Bottom
+			{
+				for( int i = 0; i < Size; ++i )
+				{
+					boardPieceObject = _boardPieceField[x][i];
+					_boardPieceField[x][i] = null;
+					
+					// Handle moving to grid coord + back to pile.
+					if( ( i - 1 ) >= 0 )
+					{
+						_boardPieceField[x][i - 1] = boardPieceObject;
+
+						position = GetPiecePosition(x, i - 1);
+						objectMover = boardPieceObject.GetComponent< ObjectMover >();
+						objectMover.Move(position, Quaternion.identity, 0.5f, null);
+					}
+					else
+					{
+						position = GetPilePosition();
+						objectMover = boardPieceObject.GetComponent< ObjectMover >();
+						objectMover.Move(position, _pileRotation, 2.0f, null);
+
+						_boardPiecePile.Add ( boardPieceObject );						
+					}
+				}
+				
+				// Add new piece.
+				boardPieceObject = _boardPiecePile[0];
+				_boardPiecePile.RemoveAt (0);
+				_boardPieceField[x][Size - 1] = boardPieceObject;
+				position = GetPiecePosition(x, Size - 1);
+				objectMover = boardPieceObject.GetComponent< ObjectMover >();
+				objectMover.Move(position, Quaternion.identity, 1.0f, null);
+
+			}
+			
 		}
 	}
 }
