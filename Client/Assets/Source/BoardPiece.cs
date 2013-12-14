@@ -3,8 +3,7 @@ using System.Collections;
 
 public class BoardPiece : MonoBehaviour
 {
-	private int _x = 0;
-	private int _y = 0;
+	private int _id = 0;
 	
 	// Use this for initialization
 	void Start ()
@@ -19,7 +18,7 @@ public class BoardPiece : MonoBehaviour
 	}
 	
 	// Setup piece with play area and position.
-	public void SetupPiece( BoardPlayArea playArea, int X, int Y )
+	public void SetupPiece( BoardPlayArea playArea, int id )
 	{
 		// Parent transform.
 		if( playArea != null )
@@ -27,15 +26,14 @@ public class BoardPiece : MonoBehaviour
 			transform.parent = playArea.transform;
 		}
 		
-		// X & Y.
-		_x = X;
-		_y = Y;
-		
-		// Setup position.
-		transform.localPosition = new Vector3( (float)X, 0.0f, (float)Y );
-		
+		// ID.
+		if( id != -1 )
+		{
+			_id = id;
+		}
+			
 		// Setup name for easy debugging.
-		this.gameObject.name = string.Format( "BoardPiece({0},{1})", _x, _y );
+		this.gameObject.name = string.Format( "BoardPiece({0})", _id );
 	}
 	
 	

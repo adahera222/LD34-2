@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class BoardPlayArea : MonoBehaviour 
 {
@@ -14,22 +15,55 @@ public class BoardPlayArea : MonoBehaviour
 		PieceSelected
 	}
 	
+	public int Size = 7;
+	
 	private PlayAreaState _playAreaState = PlayAreaState.Idle;
-	
-	
 	private GameObject _selectedObject = null;
 	
+	// Pieces in pile to select from.
+	private List<GameObject> _boardPiecePile = new List<GameObject>();
+	
+	// Played pieces.
+	private GameObject[][] _boardPieceField = null;
+	
+	// Get piece position.
+	Vector3 GetPiecePosition( int x, int y )
+	{
+		// Centre x + y.
+		x = x - ( Size / 2 );
+		y = y - ( Size / 2 );
+		
+		return new Vector3( (float)x, 0.0f, (float)y );
+	}
+		
 	// Use this for initialization
 	void Start ()
 	{
-		// Clone all board pieces.
-		for( int Y = -3; Y <= 3; ++Y )
+		// Create board pieces.
+		for( int i = 0; i < 60; ++i )
 		{
-			for( int X = -3; X <= 3; ++X )
+			var boardPieceObject = Object.Instantiate( TemplatePiece ) as GameObject;
+			var boardPiece = boardPieceObject.GetComponent< BoardPiece >();
+			_boardPiecePile.Add( boardPieceObject );
+			boardPiece.SetupPiece( this, i );
+			
+			var position = GetPiecePosition( -1, Size / 2 );
+			boardPiece.transform.localPosition = position;			
+		}
+		
+		// Create board field.
+		_boardPieceField = new GameObject[Size][];
+		for( int i = 0; i < Size; ++i )
+		{
+			_boardPieceField[i] = new GameObject[Size];
+		}
+		
+		// Play pieces.
+		for( int y = 0; y < 7; ++y )
+		{
+			for( int x = 0; x < 7; ++x )
 			{
-				var newPiece = Object.Instantiate( TemplatePiece ) as GameObject;
-				var boardPiece = newPiece.GetComponent< BoardPiece >();
-				boardPiece.SetupPiece( this, X, Y );
+				PlayTopPiece( x, y );
 			}
 		}
 	}
@@ -74,6 +108,23 @@ public class BoardPlayArea : MonoBehaviour
 				}
 			}
 			break;
+		}
+	}
+	
+	public void PlayTopPiece(int x, int y)
+	{
+		// Grab and move between lists.
+		if( x >= 0 && x < Size &&
+			y >= 0 && y < Size )
+		{
+			var boardPieceObject = _boardPiecePile[0];
+			_boardPiecePile.RemoveAt (0);
+			_boardPieceField[x][y] = boardPieceObject;
+			
+			// Move to X & Y.
+			var position = GetPiecePosition(x, y);
+			var objectMover = boardPieceObject.GetComponent< ObjectMover >();
+			objectMover.Move(position, Quaternion.identity, 1.0f, null);
 		}
 	}
 }
