@@ -51,6 +51,8 @@
      <Compile Include="Assets\Source\LAGClient.cs" />
      <Compile Include="Assets\Source\Layers.cs" />
      <Compile Include="Assets\Source\ObjectMover.cs" />
+     <Compile Include="Assets\Source\PathNode.cs" />
+     <Compile Include="Assets\Source\PieceMovePosition.cs" />
      <Compile Include="Assets\Source\PlayerPiece.cs" />
      <Compile Include="Assets\Source\TileCoord.cs" />
      <Compile Include="Assets\Source\UnityHTTP\CookieJar.cs" />

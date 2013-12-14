@@ -1,19 +1,15 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class PlayerPiece : MonoBehaviour
-{
-	public TileCoord CurrCoord;
-	
+public class PieceMovePosition : MonoBehaviour {
+
 	// Use this for initialization
-	void Start ()
-	{
+	void Start () {
 	
 	}
 	
 	// Update is called once per frame
-	void Update ()
-	{
+	void Update () {
 	
 	}
 }

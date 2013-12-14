@@ -1,10 +1,11 @@
 using System;
 
-public struct TileCoord
+public class TileCoord
 {
 	public int x;
 	public int y;
-	
+	public int edge;
+		
 	public enum Direction
 	{
 		Top = 0,
@@ -21,15 +22,28 @@ public struct TileCoord
 		new TileCoord( 1, 0 ),
 	};
 	
+	public static readonly int[] OppositeEdge = new int[]
+	{
+		1, 0, 3, 2
+	};
+	
 	public TileCoord(int inX, int inY)
 	{
 		x = inX;
 		y = inY;
+		edge = -1;
 	}
 	
+	public TileCoord(int inX, int inY, int inEdge)
+	{
+		x = inX;
+		y = inY;
+		edge = inEdge;
+	}
+		
 	public TileCoord Next(int direction)
 	{
-		return new TileCoord(x + Directions[direction].x, y + Directions[direction].y);
+		return new TileCoord(x + Directions[direction].x, y + Directions[direction].y, OppositeEdge[ edge ]);
 	}
 	
  	public bool Equals(TileCoord other)
@@ -47,13 +61,14 @@ public struct TileCoord
         var objectToCompareWith = (TileCoord)obj;
 
         return objectToCompareWith.x == x &&
-               objectToCompareWith.y == y;
+               objectToCompareWith.y == y &&
+		       objectToCompareWith.edge == edge;
 
     }
 	
     public override int GetHashCode()
     {
-        return x.GetHashCode() + y.GetHashCode();
+        return x.GetHashCode() + y.GetHashCode() + edge.GetHashCode();
     }
 }
 

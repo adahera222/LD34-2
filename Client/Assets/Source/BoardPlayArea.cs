@@ -146,6 +146,9 @@ public class BoardPlayArea : MonoBehaviour
 			{
 				playerPiece.transform.parent = _boardPieceField[centre][centre].transform;
 				playerPiece.transform.position = transformOnTile.position;
+				playerPiece.CurrCoord = new TileCoord( centre, centre, i );
+				
+				_playerPieces.Add ( playerPiece );
 			}
 		}
 	}
@@ -176,6 +179,53 @@ public class BoardPlayArea : MonoBehaviour
 			
 			case PlayAreaState.MovePlayer:
 			{
+				if( Input.GetMouseButtonDown( 0 ) )
+				{
+					var ray = Camera.main.ScreenPointToRay( Input.mousePosition );
+					var rayHits = Physics.RaycastAll( ray, Mathf.Infinity, 1 << Layers.MoveLocation );
+					if( rayHits.Length > 0 )
+					{
+						var rayHit = rayHits[0];
+					
+						var fromBoardPiece = _playerPieces[ _activePlayerIndex ].transform.parent.GetComponent< BoardPiece >();
+						var movePosition = rayHit.collider.gameObject.GetComponent< PieceMovePosition >();
+						var targetBoardPiece = movePosition.transform.parent.GetComponent< BoardPiece >();
+						var newCoord = targetBoardPiece.Coord;
+					
+						for( int i = 0; i < 4; ++i )
+						{
+							if( targetBoardPiece.GetEdgePieceTransform( i ) == movePosition.transform )
+							{
+								newCoord = new TileCoord( newCoord.x, newCoord.y, i );
+								break;
+							}
+						}
+						//PlayPiece( boardPiece.X, boardPiece.Y, null );
+						//_playAreaState = PlayAreaState.MovePlayer;
+						
+						var fromCoord = _playerPieces[ _activePlayerIndex ].CurrCoord;
+						var targetCoord = newCoord;
+					
+						var path = CalulatePath( fromCoord, targetCoord );
+						
+						if( path != null )
+						{
+							var lastPos = path[ path.Count - 1 ];
+						
+							// Just jump to target coord.
+							var playerPiece = _playerPieces[ _activePlayerIndex ];
+							var transformOnTile = GetTransformOnTile( lastPos.x, lastPos.y, lastPos.edge );
+							if( transformOnTile != null )
+							{
+								playerPiece.transform.parent = _boardPieceField[lastPos.x][lastPos.y].transform;
+								var objectMover = playerPiece.gameObject.GetComponent< ObjectMover >();
+								objectMover.Move( transformOnTile.position, Quaternion.identity, 2.0f, null );
+								playerPiece.CurrCoord = lastPos;
+								_playAreaState = PlayAreaState.NextTurn;
+							}
+						}
+					}								
+				}
 			}
 			break;
 
@@ -183,6 +233,9 @@ public class BoardPlayArea : MonoBehaviour
 			{
 				// Funky animation bro!
 				_playAreaState = PlayAreaState.PlaceNewTile;
+			
+				// Player.
+				_activePlayerIndex = ( _activePlayerIndex + 1 ) % 4;
 			}
 			break;
 		}
@@ -392,9 +445,29 @@ public class BoardPlayArea : MonoBehaviour
 			objectMover = boardPieceObject.GetComponent< ObjectMover >();
 			objectMover.Move(GetPilePosition() + new Vector3( 1.0f, 0.0f, 0.0f ), Quaternion.identity, MoveHeightForNewTile, null);
 		}
+		
+		// Update player coords.
+		int centre = Size / 2;
+		for( int i = 0; i < _playerPieces.Count; ++i)
+		{
+			var playerPiece = _playerPieces[ i ];
+			var boardPiece = playerPiece.transform.parent.GetComponent< BoardPiece >();
+			playerPiece.CurrCoord = new TileCoord( boardPiece.Coord.x, boardPiece.Coord.y, playerPiece.CurrCoord.edge );
+			
+			if( playerPiece.CurrCoord.x == -1 ||
+				playerPiece.CurrCoord.y == -1 ||
+				playerPiece.CurrCoord.edge == -1 )
+			{
+				playerPiece.transform.parent = _boardPieceField[centre][centre].transform;
+				var transformOnTile = _boardPieceField[centre][centre].GetEdgePieceTransform( i );
+				var objectMover = playerPiece.gameObject.GetComponent< ObjectMover >();
+				objectMover.Move( transformOnTile.position, Quaternion.identity, 2.0f, null );
+				playerPiece.CurrCoord =  new TileCoord( 0, 0, i );
+			}
+		}
 	}
 	
-	bool IsValidMove( TileCoord fromCoord, TileCoord targetCoord )
+	List<TileCoord> CalulatePath( TileCoord fromCoord, TileCoord targetCoord )
 	{
 		// Clear path finding data.
 		for( int y = 0; y < Size; ++y )
@@ -406,24 +479,30 @@ public class BoardPlayArea : MonoBehaviour
 		}
 		
 		// Check neighbours.
-		if( IsValidMoveCheckNeighbours( fromCoord, targetCoord, 0 ) )
+		TileCoord finalCoord = IsValidMoveCheckNeighbours( fromCoord, targetCoord, 0 );
+		if( finalCoord != null )
 		{
 			// If we have found, work back from the target coord down the quickest path.
 			List<TileCoord> path = new List<TileCoord>();
-			TileCoord currCoord = targetCoord;
-			TileCoord nextCoord = targetCoord;
-			while( !currCoord.Equals( fromCoord ) )
+			TileCoord currCoord = finalCoord;
+			TileCoord nextCoord = finalCoord;
+			
+			path.Add ( currCoord );
+			
+			while( !( fromCoord.x == currCoord.x &&
+			          fromCoord.y == currCoord.y &&
+			          fromCoord.edge == currCoord.edge ) )
 			{
-				path.Add ( currCoord );
-				
-				int lowestDistance = _boardPieceField[ currCoord.x ][ currCoord.y ].TentativeDistance;
+				int lowestDistance = _boardPieceField[ currCoord.x ][ currCoord.y ].PathNodes[ currCoord.edge ].TentativeDistance;
 				
 				for( int i = 0; i < 4; ++i )
 				{
-					if( IsValidMoveSingleStep( currCoord, i ) )
+					var validMoveOut = IsValidMoveSingleStep( currCoord, i, false );
+					
+					if( validMoveOut != null )
 					{
-						var testCoord = currCoord.Next( i );
-						int distance = _boardPieceField[ testCoord.x ][ testCoord.y ].TentativeDistance;
+						var testCoord = validMoveOut.Next( i );
+						int distance = _boardPieceField[ testCoord.x ][ testCoord.y ].PathNodes[ testCoord.edge ].TentativeDistance;
 						if( distance < lowestDistance )
 						{
 							lowestDistance = distance;
@@ -431,75 +510,117 @@ public class BoardPlayArea : MonoBehaviour
 						}						
 					}
 				}
+				
+				if( lowestDistance == _boardPieceField[ currCoord.x ][ currCoord.y ].PathNodes[ currCoord.edge ].TentativeDistance )
+				{
+					Debug.Log ( "Fail." );
+					break;
+				}
+				
+				path.Add ( nextCoord );				
+				currCoord = nextCoord;
+			}
+			
+			// Reverse so we can traverse it.
+			path.Reverse();
+			
+			return path;
+		}
+		
+		return null;		
+	}
+	
+	TileCoord IsValidMoveCheckNeighbours( TileCoord fromCoord, TileCoord targetCoord, int distanceMoved )
+	{
+		// Set tentative distance to self.
+		_boardPieceField[ fromCoord.x ][ fromCoord.y ].PathNodes[ fromCoord.edge ].SetTentativeDistance( distanceMoved );
+		
+		//Debug.Log ( string.Format( "Search Path: {0}, {1}, {2} : {3}", fromCoord.x, fromCoord.y, fromCoord.edge, distanceMoved ) );
+		
+		// If from and target match, we've arrived.
+		if( fromCoord.x == targetCoord.x &&
+			fromCoord.y == targetCoord.y )
+		{
+			var fromTile = _boardPieceField[fromCoord.x][fromCoord.y];
+			
+			if( fromTile.IsConnected( fromCoord.edge, targetCoord.edge ) )
+			{
+				return targetCoord;
 			}
 		}
 		
-		return true;		
-	}
-	
-	bool IsValidMoveCheckNeighbours( TileCoord fromCoord, TileCoord targetCoord, int distanceMoved )
-	{
-		// Set tentative distance to self.
-		_boardPieceField[ fromCoord.x ][ fromCoord.y ].SetTentativeDistance( distanceMoved++ );
-		
-		// If from and target match, we've arrived.
-		if( fromCoord.Equals( targetCoord ) )
-		{
-			return true;
-		}
-		
 		// Validate move to neighbour.
-		List<TileCoord> ValidMoves = new List<TileCoord>();
+		List<TileCoord> validMovesOut = new List<TileCoord>();
 		for( int i = 0; i < 4; ++i )	
 		{
-			if( IsValidMoveSingleStep( fromCoord, i ) )
+			var outTileCoord = IsValidMoveSingleStep( fromCoord, i, true );
+			
+			if( outTileCoord != null )
 			{
-				ValidMoves.Add( fromCoord.Next( i ) );
+				validMovesOut.Add( outTileCoord );
 			}
 		}
 		
 		// Check neighbours of valid moves.
-		foreach( var validMove in ValidMoves )
+		foreach( var validMoveOut in validMovesOut )
 		{
-			if( IsValidMoveCheckNeighbours( validMove, targetCoord, distanceMoved ) )
+			_boardPieceField[ validMoveOut.x ][ validMoveOut.y ].PathNodes[ validMoveOut.edge ].SetTentativeDistance( distanceMoved );
+			
+			TileCoord retVal = IsValidMoveCheckNeighbours( validMoveOut.Next( validMoveOut.edge ), targetCoord, distanceMoved + 1 );
+			if( retVal != null )
 			{
-				return true;
+				return retVal;
 			}
 		}
 		
-		return false;
+		return null;
 	}
 	
-	bool IsValidMoveSingleStep( TileCoord fromCoord, int direction )
+	TileCoord IsValidMoveSingleStep( TileCoord fromCoord, int direction, bool checkIfVisited )
 	{
 		// Check that we can move from our tiles edge to the next tiles edge.
-		// Condition: Not visited.
+		// Condition: Internally, we have the valid connectivity.
+		// Condition: Not visited the next.
 		// Condition: Both have valid transforms at matching edges.
-		
 		int[] targetEdgeIndices = new int[]
 		{
 			1, 0, 3, 2
 		};
 		
+		var fromTile = _boardPieceField[fromCoord.x][fromCoord.y];
+		
+		var nextFromCoord = new TileCoord( fromCoord.x, fromCoord.y, direction );
+		
+		// Check connectivity, update from.
+		if( fromTile.IsConnected( fromCoord.edge, nextFromCoord.edge ) == false )
+		{
+			return null;
+		}
+		else
+		{
+			fromCoord = nextFromCoord;
+		}	
+				
+		// Generate to.		
 		var toCoord = fromCoord.Next( direction );
 		
-		if( _boardPieceField[ toCoord.x ][ toCoord.y ].HasVisited == true ||
-			toCoord.x < 0 || toCoord.x >= Size ||
-			toCoord.y < 0 || toCoord.y >= Size )
+		if( toCoord.x < 0 || toCoord.x >= Size ||
+			toCoord.y < 0 || toCoord.y >= Size ||
+			( checkIfVisited && _boardPieceField[ toCoord.x ][ toCoord.y ].PathNodes[ toCoord.edge ].HasVisited ) )
 		{
-			return false;
+			return null;
 		}
 		
-		var fromEdgeTransform = _boardPieceField[fromCoord.x][fromCoord.y].GetEdgePieceTransform(direction);
-		var toEdgeTransform = _boardPieceField[toCoord.x][toCoord.y].GetEdgePieceTransform(direction);
+		var fromEdgeTransform = fromTile.GetEdgePieceTransform(direction);
+		var toEdgeTransform = _boardPieceField[toCoord.x][toCoord.y].GetEdgePieceTransform(toCoord.edge);
 		
 		if( fromEdgeTransform == null ||
 			toEdgeTransform == null )
 		{
-			return false;
+			return null;
 		}
 		
-		return true;
+		return fromCoord;
 	}
 	
 	void OnGUI()

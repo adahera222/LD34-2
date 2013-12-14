@@ -39,25 +39,13 @@ public class BoardPiece : MonoBehaviour
 	
 	
 	#region Path finding.
-	
-	public bool HasVisited = false;
-	public int 	TentativeDistance = int.MaxValue;
-	
+	public PathNode[] PathNodes = new PathNode[4];
+		
 	public void ClearPathfinding()
 	{
-		HasVisited = false;
-		TentativeDistance = int.MaxValue;
-	}
-	
-	public void SetTentativeDistance(int tentativeDistance )
-	{
-		// If we're settin', we're visitin'
-		HasVisited = true;
-		
-		// Only set if new value is lower than original.
-		if( TentativeDistance > tentativeDistance )
+		for( int i = 0; i < 4; ++i )
 		{
-			TentativeDistance = tentativeDistance;
+			PathNodes[i] = new PathNode();
 		}
 	}
 	
@@ -78,6 +66,11 @@ public class BoardPiece : MonoBehaviour
 		}
 		
 		return 0;
+	}
+	
+	public bool IsConnected(int fromEdge, int toEdge )
+	{
+		return ( fromEdge == toEdge ) || ( (int)GetConnectivity( fromEdge ) & (1 << toEdge) ) != 0 ? true : false;
 	}
 	
 	public Transform GetEdgePieceTransform(int index)
@@ -147,7 +140,21 @@ public class BoardPiece : MonoBehaviour
 		{
 			var edgeConnectivity = GetConnectivity(i);
 			var edgePieceTransform = GetEdgePieceTransform(i);
-			Vector3 a = transform.localToWorldMatrix.MultiplyPoint( _edgeVectors[ i ] * 0.5f );
+			Vector3 a = transform.localToWorldMatrix.MultiplyPoint( _edgeVectors[ i ] * 0.4f );
+			
+			if( PathNodes[ i ] != null )
+			{
+				if( PathNodes[ i ].HasVisited == false )
+				{
+					Gizmos.color = new Color( 0.0f, 0.0f, 0.0f, 1.0f );
+				}
+				else
+				{
+					Gizmos.color = new Color( 1.0f, 1.0f, 1.0f, 1.0f );
+				}
+				Gizmos.DrawSphere( a, 0.1f );
+			}
+			
 			
 			Gizmos.color = new Color( 0.0f, 1.0f, 0.0f, 1.0f );
 			
@@ -160,7 +167,7 @@ public class BoardPiece : MonoBehaviour
 			Gizmos.color = new Color( 0.0f, 0.0f, 1.0f, 1.0f );
 			for( int j = 0; j < 4; ++j )
 			{
-				Vector3 b = transform.localToWorldMatrix.MultiplyPoint( _edgeVectors[ j ] * 0.5f );
+				Vector3 b = transform.localToWorldMatrix.MultiplyPoint( _edgeVectors[ j ] * 0.4f );
 				Gizmos.DrawSphere( a, radius );
 				if( ( edgeConnectivity & (Connectivity)(1 << j) ) != 0 )
 				{
