@@ -14,6 +14,8 @@ public class BoardPiece : MonoBehaviour
 	
 	private int _id = 0;
 	
+	public TileCoord Coord;
+	
 	[EnumFlags]
 	public Connectivity TopEdge;
 
@@ -35,7 +37,33 @@ public class BoardPiece : MonoBehaviour
 	public int TotalInDeck = 0;
 	public int TotalWithEventsInDeck = 0;	
 	
-	private Connectivity GetConnectivity(int index)
+	
+	#region Path finding.
+	
+	public bool HasVisited = false;
+	public int 	TentativeDistance = int.MaxValue;
+	
+	public void ClearPathfinding()
+	{
+		HasVisited = false;
+		TentativeDistance = int.MaxValue;
+	}
+	
+	public void SetTentativeDistance(int tentativeDistance )
+	{
+		// If we're settin', we're visitin'
+		HasVisited = true;
+		
+		// Only set if new value is lower than original.
+		if( TentativeDistance > tentativeDistance )
+		{
+			TentativeDistance = tentativeDistance;
+		}
+	}
+	
+	#endregion
+	
+	public Connectivity GetConnectivity(int index)
 	{
 		switch( index )
 		{
@@ -52,7 +80,7 @@ public class BoardPiece : MonoBehaviour
 		return 0;
 	}
 	
-	private Transform GetEdgePieceTransform(int index)
+	public Transform GetEdgePieceTransform(int index)
 	{
 		switch( index )
 		{
