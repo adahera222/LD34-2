@@ -1,12 +1,21 @@
-using System;
+using UnityEngine;
+using System.Collections;
 
-namespace AssemblyCSharp
+public class BoardPiecePlayLocation : MonoBehaviour
 {
-	public class BoardPiecePlayLocation
+	public int X = 0;
+	public int Y = 0;
+	
+	// Use this for initialization
+	void Start ()
 	{
-		public BoardPiecePlayLocation ()
-		{
-		}
+	
 	}
+	
+	// Update is called once per frame
+	void Update ()
+	{
+	
+	}
+	
 }
-

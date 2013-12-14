@@ -45,6 +45,7 @@
   </ItemGroup>
   <ItemGroup>
      <Compile Include="Assets\Source\BoardPiece.cs" />
+     <Compile Include="Assets\Source\BoardPiecePlayLocation.cs" />
      <Compile Include="Assets\Source\BoardPlayArea.cs" />
      <Compile Include="Assets\Source\LAGClient.cs" />
      <Compile Include="Assets\Source\Layers.cs" />

@@ -4,21 +4,17 @@ using System.Collections.Generic;
 
 public class BoardPlayArea : MonoBehaviour 
 {
-	/// <summary>
-	/// The template piece.
-	/// </summary>
 	public GameObject TemplatePiece;
+	public GameObject TemplatePiecePlayLocation;
 	
 	public enum PlayAreaState
 	{
-		Idle,
-		PieceSelected
+		Idle
 	}
 		
 	public int Size = 7;
 	
 	private PlayAreaState _playAreaState = PlayAreaState.Idle;
-	private GameObject _selectedObject = null;
 	
 	// Pieces in pile to select from.
 	private List<GameObject> _boardPiecePile = new List<GameObject>();
@@ -40,8 +36,31 @@ public class BoardPlayArea : MonoBehaviour
 			boardPiece.SetupPiece( this, i );
 			
 			var position = GetPilePosition();
+			boardPiece.transform.parent = transform;
 			boardPiece.transform.localPosition = position;			
 			boardPiece.transform.localRotation = _pileRotation;
+		}
+		
+		// Create board piece play locations.
+		for( int y = -1; y <= Size; ++y )
+		{
+			for( int x = -1; x <= Size; ++x )
+			{
+				if( ( ( x < 0 || x >= Size ) ||
+					  ( y < 0 || y >= Size ) ) &&
+					( ( x >= 0 && x < Size ) ||
+					  ( y >= 0 && y < Size ) ) &&
+					( ( x != 3 && y != 3 ) ) )
+				{
+					var boardPieceObject = Object.Instantiate( TemplatePiecePlayLocation ) as GameObject;
+					var boardPiece = boardPieceObject.GetComponent< BoardPiecePlayLocation >();
+			
+					boardPiece.X = x;
+					boardPiece.Y = y;
+					boardPiece.transform.parent = transform;
+					boardPiece.transform.localPosition = GetPiecePosition( x, y );
+				}
+			}
 		}
 		
 		// Create board field.
@@ -71,40 +90,18 @@ public class BoardPlayArea : MonoBehaviour
 				if( Input.GetMouseButtonDown( 0 ) )
 				{
 					var ray = Camera.main.ScreenPointToRay( Input.mousePosition );
-					var rayHits = Physics.RaycastAll( ray, Mathf.Infinity, 1 << Layers.Piece );
+					var rayHits = Physics.RaycastAll( ray, Mathf.Infinity, 1 << Layers.PiecePlayLocation );
 					if( rayHits.Length > 0 )
 					{
 						var rayHit = rayHits[0];
-						_selectedObject = rayHit.collider.gameObject;
-						_playAreaState = PlayAreaState.PieceSelected;
-					}
-					else
-					{
-						PlayTopPiece( 3, Size );
+					
+						var boardPiece = rayHit.collider.gameObject.GetComponent< BoardPiecePlayLocation >();
+						PlayTopPiece( boardPiece.X, boardPiece.Y );
 					}
 				}
 			}
 			break;
 			
-			case PlayAreaState.PieceSelected:
-			{
-				var ray = Camera.main.ScreenPointToRay( Input.mousePosition );
-				var rayHits = Physics.RaycastAll( ray, Mathf.Infinity, 1 << Layers.Board );
-				if( rayHits.Length > 0 )
-				{
-					var rayHit = rayHits[0];
-					
-					_selectedObject.transform.position = rayHit.point + new Vector3( 0.0f, 0.2f, 0.0f );
-					if( Input.GetMouseButtonDown( 0 ) )
-					{	
-						_selectedObject.transform.position = rayHit.point;
-						//var objectMover = _selectedObject.GetComponent< ObjectMover >();
-						//objectMover.Move( rayHit.point, objectMover.transform.rotation, 2.0f, null );
-						_playAreaState = PlayAreaState.Idle;
-					}
-				}
-			}
-			break;
 		}
 	}
 	
