@@ -12,8 +12,13 @@ public class BoardPlayArea : MonoBehaviour
 	{
 		Idle
 	}
-		
+	
 	public int Size = 7;
+	
+	
+	public float MoveHeightForTileSlide = 0.0f;
+	public float MoveHeightForNewTile = 1.0f;
+	public float MoveHeightForReturnTile = 2.0f;
 	
 	private PlayAreaState _playAreaState = PlayAreaState.Idle;
 	
@@ -54,6 +59,18 @@ public class BoardPlayArea : MonoBehaviour
 			_boardPiecePile.RemoveAt(0);
 		}
 		
+		// Find start piece and remove.
+		BoardPiece startPiece = null;
+		for( int i = 0; i < _boardPiecePile.Count; ++i )
+		{
+			if( _boardPiecePile[ i ].IsStart )
+			{
+				startPiece = _boardPiecePile[ i ];
+				_boardPiecePile.RemoveAt( i );
+				break;
+			}
+		}
+				
 		// Create board piece play locations.
 		for( int y = -1; y <= Size; ++y )
 		{
@@ -63,7 +80,7 @@ public class BoardPlayArea : MonoBehaviour
 					  ( y < 0 || y >= Size ) ) &&
 					( ( x >= 0 && x < Size ) ||
 					  ( y >= 0 && y < Size ) ) &&
-					( ( x != 3 && y != 3 ) ) )
+					( ( x != ( Size / 2 ) && y != ( Size / 2 ) ) ) )
 				{
 					var boardPieceObject = Object.Instantiate( TemplatePiecePlayLocation.gameObject ) as GameObject;
 					var boardPiece = boardPieceObject.GetComponent< BoardPiecePlayLocation >();
@@ -88,7 +105,15 @@ public class BoardPlayArea : MonoBehaviour
 		{
 			for( int x = 0; x < 7; ++x )
 			{
-				PlayTopPiece( x, y );
+				if( x == ( Size / 2 ) && y == ( Size / 2 ) )
+				{
+					PlayPiece( x, y, startPiece );
+				}
+				else
+				{
+					PlayPiece( x, y, null );
+				}
+				
 			}
 		}
 	}
@@ -109,7 +134,7 @@ public class BoardPlayArea : MonoBehaviour
 						var rayHit = rayHits[0];
 					
 						var boardPiece = rayHit.collider.gameObject.GetComponent< BoardPiecePlayLocation >();
-						PlayTopPiece( boardPiece.X, boardPiece.Y );
+						PlayPiece( boardPiece.X, boardPiece.Y, null );
 					}
 				}
 			}
@@ -134,20 +159,23 @@ public class BoardPlayArea : MonoBehaviour
 	}
 		
 	// Play top piece to somewhere.
-	public void PlayTopPiece(int x, int y)
+	public void PlayPiece(int x, int y, BoardPiece piece)
 	{
 		// Grab and move between lists.
 		if( x >= 0 && x < Size &&
 			y >= 0 && y < Size )
 		{
-			var boardPieceObject = _boardPiecePile[0];
-			_boardPiecePile.RemoveAt (0);
+			var boardPieceObject = piece == null ? _boardPiecePile[0] : piece;
+			if( piece == null )
+			{
+				_boardPiecePile.RemoveAt (0);
+			}
 			_boardPieceField[x][y] = boardPieceObject;
 			
 			// Move to X & Y.
 			var position = GetPiecePosition(x, y);
 			var objectMover = boardPieceObject.GetComponent< ObjectMover >();
-			objectMover.Move(position, Quaternion.identity, 1.0f, null);
+			objectMover.Move(position, Quaternion.identity, MoveHeightForNewTile, null);
 		}
 		else if( ( x >= 0 && x < Size ) ||
 			     ( y >= 0 && y < Size ) )
@@ -173,13 +201,13 @@ public class BoardPlayArea : MonoBehaviour
 
 						position = GetPiecePosition(i + 1, y);
 						objectMover = boardPieceObject.GetComponent< ObjectMover >();
-						objectMover.Move(position, Quaternion.identity, 0.5f, null);
+						objectMover.Move(position, Quaternion.identity, MoveHeightForTileSlide, null);
 					}
 					else
 					{
 						position = GetPilePosition();
 						objectMover = boardPieceObject.GetComponent< ObjectMover >();
-						objectMover.Move(position, _pileRotation, 2.0f, null);
+						objectMover.Move(position, _pileRotation, MoveHeightForReturnTile, null);
 
 						_boardPiecePile.Add ( boardPieceObject );						
 					}
@@ -191,7 +219,7 @@ public class BoardPlayArea : MonoBehaviour
 				_boardPieceField[0][y] = boardPieceObject;
 				position = GetPiecePosition(0, y);
 				objectMover = boardPieceObject.GetComponent< ObjectMover >();
-				objectMover.Move(position, Quaternion.identity, 1.0f, null);
+				objectMover.Move(position, Quaternion.identity, MoveHeightForNewTile, null);
 			}
 			else if( x == Size ) // Right
 			{
@@ -207,13 +235,13 @@ public class BoardPlayArea : MonoBehaviour
 
 						position = GetPiecePosition(i - 1, y);
 						objectMover = boardPieceObject.GetComponent< ObjectMover >();
-						objectMover.Move(position, Quaternion.identity, 0.5f, null);
+						objectMover.Move(position, Quaternion.identity, MoveHeightForTileSlide, null);
 					}
 					else
 					{
 						position = GetPilePosition();
 						objectMover = boardPieceObject.GetComponent< ObjectMover >();
-						objectMover.Move(position, _pileRotation, 2.0f, null);
+						objectMover.Move(position, _pileRotation, MoveHeightForReturnTile, null);
 
 						_boardPiecePile.Add ( boardPieceObject );						
 					}
@@ -225,7 +253,7 @@ public class BoardPlayArea : MonoBehaviour
 				_boardPieceField[Size - 1][y] = boardPieceObject;
 				position = GetPiecePosition(Size - 1, y);
 				objectMover = boardPieceObject.GetComponent< ObjectMover >();
-				objectMover.Move(position, Quaternion.identity, 1.0f, null);
+				objectMover.Move(position, Quaternion.identity, MoveHeightForNewTile, null);
 			}
 			else if( y == -1 ) // Bottom
 			{
@@ -247,7 +275,7 @@ public class BoardPlayArea : MonoBehaviour
 					{
 						position = GetPilePosition();
 						objectMover = boardPieceObject.GetComponent< ObjectMover >();
-						objectMover.Move(position, _pileRotation, 2.0f, null);
+						objectMover.Move(position, _pileRotation, MoveHeightForReturnTile, null);
 
 						_boardPiecePile.Add ( boardPieceObject );						
 					}
@@ -259,7 +287,7 @@ public class BoardPlayArea : MonoBehaviour
 				_boardPieceField[x][0] = boardPieceObject;
 				position = GetPiecePosition(x, 0);
 				objectMover = boardPieceObject.GetComponent< ObjectMover >();
-				objectMover.Move(position, Quaternion.identity, 1.0f, null);
+				objectMover.Move(position, Quaternion.identity, MoveHeightForNewTile, null);
 			}
 			else if( y == Size ) // Top
 			{
@@ -275,13 +303,13 @@ public class BoardPlayArea : MonoBehaviour
 
 						position = GetPiecePosition(x, i - 1);
 						objectMover = boardPieceObject.GetComponent< ObjectMover >();
-						objectMover.Move(position, Quaternion.identity, 0.5f, null);
+						objectMover.Move(position, Quaternion.identity, MoveHeightForTileSlide, null);
 					}
 					else
 					{
 						position = GetPilePosition();
 						objectMover = boardPieceObject.GetComponent< ObjectMover >();
-						objectMover.Move(position, _pileRotation, 2.0f, null);
+						objectMover.Move(position, _pileRotation, MoveHeightForReturnTile, null);
 
 						_boardPiecePile.Add ( boardPieceObject );						
 					}
@@ -293,7 +321,7 @@ public class BoardPlayArea : MonoBehaviour
 				_boardPieceField[x][Size - 1] = boardPieceObject;
 				position = GetPiecePosition(x, Size - 1);
 				objectMover = boardPieceObject.GetComponent< ObjectMover >();
-				objectMover.Move(position, Quaternion.identity, 1.0f, null);
+				objectMover.Move(position, Quaternion.identity, MoveHeightForNewTile, null);
 
 			}
 			

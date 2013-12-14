@@ -6,7 +6,6 @@ public class BoardPiece : MonoBehaviour
 	[System.Flags]
 	public enum Connectivity
 	{
-		None = 0x0,
 		Top = 0x1,
 		Bottom = 0x2,
 		Left = 0x4,
@@ -50,7 +49,7 @@ public class BoardPiece : MonoBehaviour
 			return RightEdge;
 		}
 		
-		return Connectivity.None;
+		return 0;
 	}
 	
 	private Transform GetEdgePieceTransform(int index)
