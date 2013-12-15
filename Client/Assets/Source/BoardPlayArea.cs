@@ -15,6 +15,8 @@ public class BoardPlayArea : MonoBehaviour
 	public Transform TilePilePosition;
 	public Transform TileRevealedPosition;
 	
+	public List<Transform> PlayerScorePositions = new List<Transform>();
+	
 	public EventPiece TemplateEventObject;
 	
 	public List<Texture2D> EventTextures = new List<Texture2D>();
