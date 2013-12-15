@@ -140,6 +140,13 @@ public class BoardPiece : MonoBehaviour
 	
 	public void SetupEvent( int id, EventPiece templateEventObject, Texture2D eventTexture )
 	{
+		var gameObject = Object.Instantiate( templateEventObject.gameObject ) as GameObject;
+		var eventPiece = gameObject.GetComponentInChildren< EventPiece >();
+		eventPiece.SetTexture( eventTexture );		
+		
+		eventPiece.transform.parent = this.transform;
+		eventPiece.transform.position = this.transform.position;
+		eventPiece.transform.rotation = Quaternion.Euler( new Vector3( 180.0f, 0.0f, 0.0f ) );
 		
 	}
 	
