@@ -48,9 +48,11 @@
      <Compile Include="Assets\Source\BoardPiecePlayLocation.cs" />
      <Compile Include="Assets\Source\BoardPlayArea.cs" />
      <Compile Include="Assets\Source\EnumFlagsAttribute.cs" />
+     <Compile Include="Assets\Source\EventCard.cs" />
      <Compile Include="Assets\Source\EventPiece.cs" />
      <Compile Include="Assets\Source\LAGClient.cs" />
      <Compile Include="Assets\Source\Layers.cs" />
+     <Compile Include="Assets\Source\NewBehaviourScript.cs" />
      <Compile Include="Assets\Source\ObjectMover.cs" />
      <Compile Include="Assets\Source\PathNode.cs" />
      <Compile Include="Assets\Source\PieceMovePosition.cs" />

@@ -16,6 +16,7 @@ public class BoardPlayArea : MonoBehaviour
 	{
 		PlaceNewTile,
 		MovePlayer,
+		CalculateScoring,
 		NextTurn
 	}
 	

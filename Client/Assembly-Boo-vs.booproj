@@ -5,11 +5,11 @@
 	<Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
 	<ProductVersion>10.0.20506</ProductVersion>
 	<SchemaVersion>2.0</SchemaVersion>
-	<ProjectGuid>{12F44184-A422-5F27-22E6-507969043F15}</ProjectGuid>
+	<ProjectGuid>{0C9179FC-BD89-8A01-9E6B-E3DD06FF3194}</ProjectGuid>
 	<OutputType>Library</OutputType>
 	<AppDesignerFolder>Properties</AppDesignerFolder>
 	<RootNamespace></RootNamespace>
-	<AssemblyName>Assembly-CSharp</AssemblyName>
+	<AssemblyName>Assembly-Boo</AssemblyName>
 	<TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
 	<FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -44,26 +44,7 @@
 	</Reference>
   </ItemGroup>
   <ItemGroup>
-     <Compile Include="Assets\Source\BoardPiece.cs" />
-     <Compile Include="Assets\Source\BoardPiecePlayLocation.cs" />
-     <Compile Include="Assets\Source\BoardPlayArea.cs" />
-     <Compile Include="Assets\Source\EnumFlagsAttribute.cs" />
-     <Compile Include="Assets\Source\EventCard.cs" />
-     <Compile Include="Assets\Source\EventPiece.cs" />
-     <Compile Include="Assets\Source\LAGClient.cs" />
-     <Compile Include="Assets\Source\Layers.cs" />
-     <Compile Include="Assets\Source\NewBehaviourScript.cs" />
-     <Compile Include="Assets\Source\ObjectMover.cs" />
-     <Compile Include="Assets\Source\PathNode.cs" />
-     <Compile Include="Assets\Source\PieceMovePosition.cs" />
-     <Compile Include="Assets\Source\PlayerPiece.cs" />
-     <Compile Include="Assets\Source\TileCoord.cs" />
-     <Compile Include="Assets\Source\UnityHTTP\CookieJar.cs" />
-     <Compile Include="Assets\Source\UnityHTTP\DiskCache.cs" />
-     <Compile Include="Assets\Source\UnityHTTP\Request.cs" />
-     <Compile Include="Assets\Source\UnityHTTP\Response.cs" />
-     <Compile Include="Assets\Source\UnityHTTP\ResponseCallbackDispatcher.cs" />
-     <Compile Include="Assets\Source\UnityHTTP\external\JSON.cs" />
+     <Compile Include="Assets\Source\NewBehaviourScript.boo" />
  <Reference Include="Ionic.Zlib">
  <HintPath>Assets\Source\UnityHTTP\external\Ionic.Zlib.dll</HintPath>
  </Reference>
