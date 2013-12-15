@@ -14,8 +14,14 @@ public class BoardPiece : MonoBehaviour
 	
 	private int _id = 0;
 	
+	public float GlowTarget = 0.0f;
+	
+	private float _glowLerp = 0.0f;
+
 	
 	public EventPiece EventPiece = null;	
+	
+	public MeshRenderer GlowMesh = null;
 	
 	public bool CanHaveEvent = false;
 	
@@ -116,7 +122,9 @@ public class BoardPiece : MonoBehaviour
 	// Update is called once per frame
 	void Update ()
 	{
-	
+		_glowLerp = ( _glowLerp * 0.9f ) + ( GlowTarget * 0.1f );
+		
+		
 	}
 	
 	// Setup piece with play area and position.
