@@ -27,7 +27,8 @@ public class BoardPlayArea : MonoBehaviour
 		PlaceNewTile,
 		MovePlayer,
 		CalculateScoring,
-		NextTurn
+		NextTurn,
+		PlayerWon
 	}
 	
 	public int Size = 7;	
@@ -354,6 +355,13 @@ public class BoardPlayArea : MonoBehaviour
 			{
 				// Funky animation bro!
 				_playAreaState = PlayAreaState.PlaceNewTile;
+			
+				//
+				if( _playerPieces[ _activePlayerIndex ].Score >= 10 )
+				{
+					_playAreaState = PlayAreaState.PlayerWon;
+					break;
+				}
 				
 				// Deactivate.
 				_playerScoreBoard[ _activePlayerIndex ].SetInactive();
@@ -363,6 +371,12 @@ public class BoardPlayArea : MonoBehaviour
 				
 				// Activate.
 				_playerScoreBoard[ _activePlayerIndex ].SetActive();
+			}
+			break;
+			
+			case PlayAreaState.PlayerWon:
+			{
+				
 			}
 			break;
 		}
