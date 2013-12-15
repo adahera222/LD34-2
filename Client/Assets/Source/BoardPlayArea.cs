@@ -306,11 +306,25 @@ public class BoardPlayArea : MonoBehaviour
 							var transformOnTile = GetTransformOnTile( lastPos.x, lastPos.y, lastPos.edge );
 							if( transformOnTile != null )
 							{
-								playerPiece.transform.parent = _boardPieceField[lastPos.x][lastPos.y].transform;
+								var boardPiece = _boardPieceField[lastPos.x][lastPos.y];
+								playerPiece.transform.parent = boardPiece.transform;
 								var objectMover = playerPiece.gameObject.GetComponent< ObjectMover >();
 								objectMover.Move( transformOnTile.position, Quaternion.identity, 2.0f, null );
 								playerPiece.CurrCoord = lastPos;
 								_playAreaState = PlayAreaState.NextTurn;
+							
+								if( boardPiece.EventPiece != null )
+								{
+									if( _eventCardActive.CheckEvent( boardPiece.EventPiece.EventId ) )
+									{
+										// Increment score.
+										_playerPieces[ _activePlayerIndex ].Score += boardPiece.ScoreValue;
+									
+										// enw card.
+										RevealEventCard();
+									}
+								}
+
 							}
 						}
 					}								

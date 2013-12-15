@@ -26,4 +26,17 @@ public class EventCard : MonoBehaviour
 			eventPiece.SetTexture( eventTextures[events[i]], events[i] );		
 		}
 	}
+	
+	public bool CheckEvent( int eventId )
+	{
+		foreach( var eventPiece in EventPieces )	
+		{
+			if( eventPiece.EventId == eventId )
+			{
+				return true;
+			}
+		}
+		
+		return false;
+	}
 }
