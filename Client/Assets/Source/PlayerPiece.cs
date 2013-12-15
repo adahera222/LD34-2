@@ -7,6 +7,9 @@ public class PlayerPiece : MonoBehaviour
 	
 	public int Score;
 	
+	public Texture2D InactiveTexture;
+	public Texture2D ActiveTexture;
+	
 	// Use this for initialization
 	void Start ()
 	{
