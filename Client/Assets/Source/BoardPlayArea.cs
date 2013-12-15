@@ -270,6 +270,8 @@ public class BoardPlayArea : MonoBehaviour
 	// Update is called once per frame
 	void Update ()
 	{
+		var playerPiece = _playerPieces[ _activePlayerIndex ];
+
 		_timer -= Time.deltaTime;
 		
 		switch( _playAreaState )
@@ -321,51 +323,54 @@ public class BoardPlayArea : MonoBehaviour
 		
 		case PlayAreaState.PlaceNewTile:
 		{
-			if( Input.GetMouseButtonDown( 0 ) )
+			if( playerPiece.isAI == false )
 			{
-				var ray = Camera.main.ScreenPointToRay( Input.mousePosition );
-				var rayHits = Physics.RaycastAll( ray, Mathf.Infinity, 1 << Layers.PiecePlayLocation );
-				if( rayHits.Length > 0 )
+				if( Input.GetMouseButtonDown( 0 ) )
 				{
-					var rayHit = rayHits[0];
-					
-					var boardPiece = rayHit.collider.gameObject.GetComponent< BoardPiecePlayLocation >();
-					PlayPiece( boardPiece.X, boardPiece.Y, null );
-					
-					// Check that we can make a move.
-					bool canMove = false;
-					var fromCoord = _playerPieces[ _activePlayerIndex ].CurrCoord;//.transform.parent.GetComponent< BoardPiece >();
-					for( int i = 0; i < 4; ++i )
+					var ray = Camera.main.ScreenPointToRay( Input.mousePosition );
+					var rayHits = Physics.RaycastAll( ray, Mathf.Infinity, 1 << Layers.PiecePlayLocation );
+					if( rayHits.Length > 0 )
 					{
-						if( IsValidMoveSingleStep( fromCoord, i, false ) != null )	
+						var rayHit = rayHits[0];
+						
+						var boardPiece = rayHit.collider.gameObject.GetComponent< BoardPiecePlayLocation >();
+						PlayPiece( boardPiece.X, boardPiece.Y, null );
+						
+						// Check that we can make a move.
+						bool canMove = false;
+						var fromCoord = _playerPieces[ _activePlayerIndex ].CurrCoord;
+						for( int i = 0; i < 4; ++i )
 						{
-							canMove = true;
-						}						
-					}
-				
-					if(canMove)
-					{
-						_playAreaState = PlayAreaState.MovePlayer;
+							if( IsValidMoveSingleStep( fromCoord, i, false ) != null )	
+							{
+								canMove = true;
+							}						
+						}
 					
-						// Touch all valid move bits.
-						fromCoord = _playerPieces[ _activePlayerIndex ].CurrCoord;
-						CalulatePath( fromCoord, null );
-					
-						SetupPathGlow();
-					
-
+						if(canMove)
+						{
+							_playAreaState = PlayAreaState.MovePlayer;
+						
+							// Touch all valid move bits.
+							fromCoord = _playerPieces[ _activePlayerIndex ].CurrCoord;
+							CalulatePath( fromCoord, null );
+						
+							SetupPathGlow();
+						
+	
+						}
+						else
+						{
+							_playAreaState = PlayAreaState.NextTurn;
+						}
+						
+						for(int i = 0; i < _boardPiecePlayLocations.Count; ++i)
+						{
+							var glower = _boardPiecePlayLocations[i].GetComponentInChildren<Glower> ();
+							glower.GlowTarget = 0.0f;
+						}
+	
 					}
-					else
-					{
-						_playAreaState = PlayAreaState.NextTurn;
-					}
-					
-					for(int i = 0; i < _boardPiecePlayLocations.Count; ++i)
-					{
-						var glower = _boardPiecePlayLocations[i].GetComponentInChildren<Glower> ();
-						glower.GlowTarget = 0.0f;
-					}
-
 				}
 			}
 		}
@@ -373,71 +378,40 @@ public class BoardPlayArea : MonoBehaviour
 		
 		case PlayAreaState.MovePlayer:
 		{
-			if( Input.GetMouseButtonDown( 0 ) )
+			if( playerPiece.isAI == false )
 			{
-				var ray = Camera.main.ScreenPointToRay( Input.mousePosition );
-				var rayHits = Physics.RaycastAll( ray, Mathf.Infinity, 1 << Layers.MoveLocation );
-				if( rayHits.Length > 0 )
+				if( Input.GetMouseButtonDown( 0 ) )
 				{
-					var rayHit = rayHits[0];
-				
-					var fromBoardPiece = _playerPieces[ _activePlayerIndex ].transform.parent.GetComponent< BoardPiece >();
-					var movePosition = rayHit.collider.gameObject.GetComponent< PieceMovePosition >();
-					var targetBoardPiece = movePosition.transform.parent.GetComponent< BoardPiece >();
-					var newCoord = targetBoardPiece.Coord;
-				
-					for( int i = 0; i < 4; ++i )
+					var ray = Camera.main.ScreenPointToRay( Input.mousePosition );
+					var rayHits = Physics.RaycastAll( ray, Mathf.Infinity, 1 << Layers.MoveLocation );
+					if( rayHits.Length > 0 )
 					{
-						if( targetBoardPiece.GetEdgePieceTransform( i ) == movePosition.transform )
+						var rayHit = rayHits[0];
+					
+						var fromBoardPiece = _playerPieces[ _activePlayerIndex ].transform.parent.GetComponent< BoardPiece >();
+						var movePosition = rayHit.collider.gameObject.GetComponent< PieceMovePosition >();
+						var targetBoardPiece = movePosition.transform.parent.GetComponent< BoardPiece >();
+						var newCoord = targetBoardPiece.Coord;
+					
+						for( int i = 0; i < 4; ++i )
 						{
-							newCoord = new TileCoord( newCoord.x, newCoord.y, i );
-							break;
-						}
-					}
-					//PlayPiece( boardPiece.X, boardPiece.Y, null );
-					//_playAreaState = PlayAreaState.MovePlayer;
-					
-					var fromCoord = _playerPieces[ _activePlayerIndex ].CurrCoord;
-					var targetCoord = newCoord;
-				
-					var path = CalulatePath( fromCoord, targetCoord );
-					
-					if( path != null )
-					{
-						var lastPos = path[ path.Count - 1 ];
-					
-						// Just jump to target coord.
-						var playerPiece = _playerPieces[ _activePlayerIndex ];
-						var transformOnTile = GetTransformOnTile( lastPos.x, lastPos.y, lastPos.edge );
-						if( transformOnTile != null )
-						{
-							var boardPiece = _boardPieceField[lastPos.x][lastPos.y];
-							playerPiece.transform.parent = boardPiece.transform;
-							var objectMover = playerPiece.gameObject.GetComponent< ObjectMover >();
-							objectMover.Move( transformOnTile.position, Quaternion.identity, 2.0f, null );
-							playerPiece.CurrCoord = lastPos;
-							_playAreaState = PlayAreaState.NextTurn;
-						
-							if( boardPiece.EventPiece != null )
+							if( targetBoardPiece.GetEdgePieceTransform( i ) == movePosition.transform )
 							{
-								if( _eventCardActive.CheckEvent( boardPiece.EventPiece.EventId ) )
-								{
-									// Increment score.
-									_playerPieces[ _activePlayerIndex ].Score += boardPiece.ScoreValue;
-									
-									var particleSystem = _playerScoreBoard[ _activePlayerIndex ].GetComponentInChildren< ParticleSystem >();
-									if( particleSystem != null )
-									{
-										particleSystem.Emit(25);
-									}
-								
-									_needNewEventCard = true;
-								}
+								newCoord = new TileCoord( newCoord.x, newCoord.y, i );
+								break;
 							}
-
 						}
-					}
-				}								
+						//PlayPiece( boardPiece.X, boardPiece.Y, null );
+						//_playAreaState = PlayAreaState.MovePlayer;
+						
+						var fromCoord = _playerPieces[ _activePlayerIndex ].CurrCoord;
+						var targetCoord = newCoord;
+					
+						var path = CalulatePath( fromCoord, targetCoord );
+						
+						MoveActivePlayer(path);
+					}								
+				}
 			}
 		}
 		break;
@@ -472,6 +446,45 @@ public class BoardPlayArea : MonoBehaviour
 		}
 	}
 	
+	void MoveActivePlayer( List<TileCoord> path )
+	{
+		var playerPiece = _playerPieces[ _activePlayerIndex ];
+		if( path != null )
+		{
+			var lastPos = path[ path.Count - 1 ];
+		
+			// Just jump to target coord.
+			var transformOnTile = GetTransformOnTile( lastPos.x, lastPos.y, lastPos.edge );
+			if( transformOnTile != null )
+			{
+				var boardPiece = _boardPieceField[lastPos.x][lastPos.y];
+				playerPiece.transform.parent = boardPiece.transform;
+				var objectMover = playerPiece.gameObject.GetComponent< ObjectMover >();
+				objectMover.Move( transformOnTile.position, Quaternion.identity, 2.0f, null );
+				playerPiece.CurrCoord = lastPos;
+				_playAreaState = PlayAreaState.NextTurn;
+			
+				if( boardPiece.EventPiece != null )
+				{
+					if( _eventCardActive.CheckEvent( boardPiece.EventPiece.EventId ) )
+					{
+						// Increment score.
+						_playerPieces[ _activePlayerIndex ].Score += boardPiece.ScoreValue;
+						
+						var particleSystem = _playerScoreBoard[ _activePlayerIndex ].GetComponentInChildren< ParticleSystem >();
+						if( particleSystem != null )
+						{
+							particleSystem.Emit(25);
+						}
+					
+						_needNewEventCard = true;
+					}
+				}
+
+			}
+		}
+	}
+
 	// Get piece position.
 	Vector3 GetPiecePosition(int x, int y)
 	{
@@ -825,7 +838,6 @@ public class BoardPlayArea : MonoBehaviour
 			
 			// Reverse so we can traverse it.
 			path.Reverse();
-			path.RemoveAt(0);
 			
 			return path.Count > 0 ? path : null;
 		}

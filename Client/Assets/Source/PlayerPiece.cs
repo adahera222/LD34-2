@@ -7,6 +7,8 @@ public class PlayerPiece : MonoBehaviour
 	
 	public int Score;
 	
+	public bool isAI = false;
+	
 	public Texture2D InactiveTexture;
 	public Texture2D ActiveTexture;
 	
