@@ -8,6 +8,10 @@ public class BoardPlayArea : MonoBehaviour
 	public List<BoardPiece> TemplateBoardPieces;
 	public List<PlayerPiece> TemplatePlayerPieces;
 	
+	public EventPiece TemplateEventObject;
+	
+	public List<Texture2D> EventTextures = new List<Texture2D>();
+	
 	public enum PlayAreaState
 	{
 		PlaceNewTile,
@@ -40,7 +44,11 @@ public class BoardPlayArea : MonoBehaviour
 	
 	// Use this for initialization
 	void Start ()
-	{
+	{		
+		Random.seed = 0; // hard code seed for now.
+
+		int id = 0;
+		
 		// Create board pieces.
 		foreach( var templateBoardPiece in TemplateBoardPieces)
 		{
@@ -49,7 +57,8 @@ public class BoardPlayArea : MonoBehaviour
 				var boardPieceObject = Object.Instantiate( templateBoardPiece.gameObject ) as GameObject;
 				var boardPiece = boardPieceObject.GetComponent< BoardPiece >();
 				_boardPiecePile.Add( boardPiece );
-				boardPiece.SetupPiece( this, i );
+				boardPiece.SetupPiece( this, id++ );
+				boardPiece.CanHaveEvent = i < boardPiece.TotalWithEventsInDeck;
 			
 				var position = GetPilePosition();
 				boardPiece.transform.parent = transform;
@@ -59,13 +68,23 @@ public class BoardPlayArea : MonoBehaviour
 		}
 		
 		// Shuffle pieces.
-		Random.seed = 0; // hard code seed for now.
-		for( int i = 0; i < _boardPiecePile.Count * 4; ++i )
+		ShufflePieces();
+		
+		// Put events on cards.
+		int eventId = 0;
+		for( int i = 0; i < _boardPiecePile.Count; ++i )
 		{
-			var randomIdx = Random.Range( 0, _boardPiecePile.Count);
-			_boardPiecePile.Insert( randomIdx, _boardPiecePile[0] );
-			_boardPiecePile.RemoveAt(0);
+			var boardPiece = _boardPiecePile[ i ];
+			
+			if( boardPiece.CanHaveEvent )
+			{
+				boardPiece.SetupEvent( eventId, TemplateEventObject, EventTextures[ eventId ] );
+				++eventId;
+			}
 		}
+		
+		// Shuffle again.
+		ShufflePieces();
 		
 		// Find start piece and remove.
 		BoardPiece startPiece = null;
@@ -150,6 +169,16 @@ public class BoardPlayArea : MonoBehaviour
 				
 				_playerPieces.Add ( playerPiece );
 			}
+		}
+	}
+	
+	void ShufflePieces()
+	{
+		for( int i = 0; i < _boardPiecePile.Count * 4; ++i )
+		{
+			var randomIdx = Random.Range( 0, _boardPiecePile.Count);
+			_boardPiecePile.Insert( randomIdx, _boardPiecePile[0] );
+			_boardPiecePile.RemoveAt(0);
 		}
 	}
 	

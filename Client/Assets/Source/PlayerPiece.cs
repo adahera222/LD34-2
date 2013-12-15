@@ -5,6 +5,8 @@ public class PlayerPiece : MonoBehaviour
 {
 	public TileCoord CurrCoord;
 	
+	public int Score;
+	
 	// Use this for initialization
 	void Start ()
 	{

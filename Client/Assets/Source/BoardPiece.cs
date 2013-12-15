@@ -14,6 +14,11 @@ public class BoardPiece : MonoBehaviour
 	
 	private int _id = 0;
 	
+	
+	public int EventId = -1;	
+	
+	public bool CanHaveEvent = false;
+	
 	public TileCoord Coord;
 	
 	[EnumFlags]
@@ -131,6 +136,11 @@ public class BoardPiece : MonoBehaviour
 			
 		// Setup name for easy debugging.
 		this.gameObject.name = string.Format( "BoardPiece({0})", _id );
+	}
+	
+	public void SetupEvent( int id, EventPiece templateEventObject, Texture2D eventTexture )
+	{
+		
 	}
 	
 	void OnDrawGizmos()
