@@ -24,12 +24,12 @@ public class EventCard : MonoBehaviour
 		"Beginning of World War I.",
 		"Death of Nelson Mandela.",
 		"Euro becomes the official currency\nof 12 European countries.",
-		"Cook' discovery of New South Wales,\nAustralia.",
+		"Cook's discovery of New South Wales,\nAustralia.",
 		"Flinders circumnavigates Australia.",
 		"Australian Prime Minister\nHarold Holt Disappears.",
 		"English Civil War: The Battle\nof Alton takes place in Hampshire.",
 		"Beatles World Tour begins in\nCopenhagen, Denmark.",
-		"7810BC....date 20.",
+		"Oldest Chinese recording of a solar\neclipse.",
 		"US Female Figure Skating\nchampionship won by Peggy Fleming.",
 		"Buddy Holly records \"Blue Days\nBlack Night\" in Nashville.",
 		"1st English Parliament called\ninto session by Earl of Leicester.",
@@ -64,10 +64,10 @@ public class EventCard : MonoBehaviour
 	{
 		for( int i = 0; i < events.Length; ++i )
 		{
-			var eventPiece = EventPieces[i];
+			var eventPiece = EventPieces[2 - i];
 			eventPiece.SetTexture( eventTextures[events[i]], events[i] );		
 			
-			TextBits[i].text = _eventStrings[ events[i] ];
+			TextBits[2 - i].text = _eventStrings[ events[i] ];
 		}
 	}
 	
