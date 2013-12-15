@@ -16,7 +16,7 @@ public class EventCard : MonoBehaviour
 		"English face Black Death Plague.",
 		"Death of Napolean.",
 		"Slavery absolished in USA.",
-		"South Africa emerged from aparted\nregime with NelsonMandela\nas its president.",
+		"South Africa emerged from aparted\nregime with Nelson Mandela\nas its president.",
 		"Death of Sir Winston Churchill.",
 		"First artificial satellite\nlaunched by Russian.",
 		"World War II begins.",

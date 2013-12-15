@@ -34,6 +34,9 @@ public class BoardPiece : MonoBehaviour
 	[EnumFlags]
 	public Connectivity RightEdge;
 	
+	
+	public int AIScoreValue = 0;
+	
 	public Transform TopEdgePieceTransform;
 	public Transform BottomEdgePieceTransform;
 	public Transform LeftEdgePieceTransform;
@@ -73,6 +76,19 @@ public class BoardPiece : MonoBehaviour
 		}
 		
 		return 0;
+	}
+	
+	public bool HasVisited()
+	{
+		for( int i = 0; i < 4; ++i )
+		{
+			if( PathNodes[i].HasVisited )
+			{
+				return true;
+			}
+		}
+		
+		return false;
 	}
 	
 	public bool IsConnected(int fromEdge, int toEdge )

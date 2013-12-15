@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 public class BoardPlayArea : MonoBehaviour 
 {
@@ -239,6 +240,8 @@ public class BoardPlayArea : MonoBehaviour
 				playerPiece.transform.parent = _boardPieceField[centre][centre].transform;
 				playerPiece.transform.position = transformOnTile.position;
 				playerPiece.CurrCoord = new TileCoord( centre, centre, i );
+				
+				playerPiece.isAI = i != 0;
 								
 				_playerPieces.Add ( playerPiece );
 				
@@ -296,6 +299,11 @@ public class BoardPlayArea : MonoBehaviour
 			{
 				_playAreaState = PlayAreaState.ShowNewEventCard;
 			}
+			
+			if( playerPiece.isAI )
+			{
+				_timer = 2.0f;
+			}
 		}
 		break;
 			
@@ -323,8 +331,11 @@ public class BoardPlayArea : MonoBehaviour
 		
 		case PlayAreaState.PlaceNewTile:
 		{
+			BoardPiecePlayLocation boardPiece = null;
+			
 			if( playerPiece.isAI == false )
 			{
+				/////////////////////////////////////////////// HUMAN
 				if( Input.GetMouseButtonDown( 0 ) )
 				{
 					var ray = Camera.main.ScreenPointToRay( Input.mousePosition );
@@ -332,46 +343,61 @@ public class BoardPlayArea : MonoBehaviour
 					if( rayHits.Length > 0 )
 					{
 						var rayHit = rayHits[0];
-						
-						var boardPiece = rayHit.collider.gameObject.GetComponent< BoardPiecePlayLocation >();
-						PlayPiece( boardPiece.X, boardPiece.Y, null );
-						
-						// Check that we can make a move.
-						bool canMove = false;
-						var fromCoord = _playerPieces[ _activePlayerIndex ].CurrCoord;
-						for( int i = 0; i < 4; ++i )
-						{
-							if( IsValidMoveSingleStep( fromCoord, i, false ) != null )	
-							{
-								canMove = true;
-							}						
-						}
-					
-						if(canMove)
-						{
-							_playAreaState = PlayAreaState.MovePlayer;
-						
-							// Touch all valid move bits.
-							fromCoord = _playerPieces[ _activePlayerIndex ].CurrCoord;
-							CalulatePath( fromCoord, null );
-						
-							SetupPathGlow();
-						
-	
-						}
-						else
-						{
-							_playAreaState = PlayAreaState.NextTurn;
-						}
-						
-						for(int i = 0; i < _boardPiecePlayLocations.Count; ++i)
-						{
-							var glower = _boardPiecePlayLocations[i].GetComponentInChildren<Glower> ();
-							glower.GlowTarget = 0.0f;
-						}
-	
+						boardPiece = rayHit.collider.gameObject.GetComponent< BoardPiecePlayLocation >();
 					}
 				}
+			}
+			else
+			{
+				if( _timer < 0.0f )
+				{
+					/////////////////////////////////////////////// AI
+					var randomIdx = Random.Range( 0, _boardPiecePlayLocations.Count );
+					boardPiece = _boardPiecePlayLocations[randomIdx];
+				
+					_timer = 2.0f;
+				}
+			}
+			
+			// Do move.
+			if( boardPiece != null )
+			{
+				PlayPiece( boardPiece.X, boardPiece.Y, null );
+				
+				// Check that we can make a move.
+				bool canMove = false;
+				var fromCoord = _playerPieces[ _activePlayerIndex ].CurrCoord;
+				for( int i = 0; i < 4; ++i )
+				{
+					if( IsValidMoveSingleStep( fromCoord, i, false ) != null )	
+					{
+						canMove = true;
+					}						
+				}
+			
+				if(canMove)
+				{
+					_playAreaState = PlayAreaState.MovePlayer;
+				
+					// Touch all valid move bits.
+					fromCoord = _playerPieces[ _activePlayerIndex ].CurrCoord;
+					CalulatePath( fromCoord, null );
+				
+					SetupPathGlow();
+				
+
+				}
+				else
+				{
+					_playAreaState = PlayAreaState.NextTurn;
+				}
+				
+				for(int i = 0; i < _boardPiecePlayLocations.Count; ++i)
+				{
+					var glower = _boardPiecePlayLocations[i].GetComponentInChildren<Glower> ();
+					glower.GlowTarget = 0.0f;
+				}
+
 			}
 		}
 		break;
@@ -380,6 +406,7 @@ public class BoardPlayArea : MonoBehaviour
 		{
 			if( playerPiece.isAI == false )
 			{
+				/////////////////////////////////////////////// HUMAN
 				if( Input.GetMouseButtonDown( 0 ) )
 				{
 					var ray = Camera.main.ScreenPointToRay( Input.mousePosition );
@@ -401,16 +428,73 @@ public class BoardPlayArea : MonoBehaviour
 								break;
 							}
 						}
-						//PlayPiece( boardPiece.X, boardPiece.Y, null );
-						//_playAreaState = PlayAreaState.MovePlayer;
 						
-						var fromCoord = _playerPieces[ _activePlayerIndex ].CurrCoord;
-						var targetCoord = newCoord;
-					
-						var path = CalulatePath( fromCoord, targetCoord );
+						var path = CalulatePath( playerPiece.CurrCoord, newCoord );
 						
 						MoveActivePlayer(path);
 					}								
+				}
+			}
+			else
+			{
+				if( _timer < 0.0f )
+				{
+					/////////////////////////////////////////////// AI!
+				
+					// Path outwards from the player to mark cells.
+					var path = CalulatePath( playerPiece.CurrCoord, null );
+					
+					// Build list of movable board pieces.
+					List<BoardPiece> movableBoardPieces = new List<BoardPiece>();
+					for( int y = 0; y < Size; ++y )
+					{
+						for( int x = 0; x < Size; ++x )
+						{
+							var boardPiece = _boardPieceField[x][y];
+							
+							if( boardPiece.HasVisited() )
+							{
+								boardPiece.AIScoreValue = Random.Range( 0, 8 );
+	
+								// Event piece? Bump that score up.
+								if( boardPiece.EventPiece != null )
+								{
+									for( int i = 0; i < 3; ++i )
+									{
+										var eventScore = ( 3 - i ) * 10;
+										var eventPiece = _eventCardActive.EventPieces[i];
+										
+										if( eventPiece.EventId == boardPiece.EventPiece.EventId )
+										{
+											boardPiece.AIScoreValue += eventScore;
+										}
+									}
+								}
+								
+								movableBoardPieces.Add (boardPiece);
+							}
+						}
+					}
+					
+					// Sort.
+					movableBoardPieces = movableBoardPieces.OrderBy( x => -x.AIScoreValue ).ToList ();
+					
+					// Target coord.
+					var targetPiece = movableBoardPieces[0];
+					TileCoord targetCoord = targetPiece.Coord;
+					for( int i = 0; i < 4; ++i )
+					{
+						if( targetPiece.PathNodes[i].HasVisited )
+						{
+							targetCoord = new TileCoord( targetCoord.x, targetCoord.y, i );
+							break;
+						}
+					}
+					
+					// Path
+					path = CalulatePath( playerPiece.CurrCoord, targetCoord );
+					
+					MoveActivePlayer(path);
 				}
 			}
 		}
