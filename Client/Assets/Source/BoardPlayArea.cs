@@ -418,20 +418,26 @@ public class BoardPlayArea : MonoBehaviour
 						var fromBoardPiece = _playerPieces[ _activePlayerIndex ].transform.parent.GetComponent< BoardPiece >();
 						var movePosition = rayHit.collider.gameObject.GetComponent< PieceMovePosition >();
 						var targetBoardPiece = movePosition.transform.parent.GetComponent< BoardPiece >();
-						var newCoord = targetBoardPiece.Coord;
-					
-						for( int i = 0; i < 4; ++i )
+						if( targetBoardPiece != null )
 						{
-							if( targetBoardPiece.GetEdgePieceTransform( i ) == movePosition.transform )
+							var newCoord = targetBoardPiece.Coord;
+					
+							if( newCoord != null )
 							{
-								newCoord = new TileCoord( newCoord.x, newCoord.y, i );
-								break;
+								for( int i = 0; i < 4; ++i )
+								{
+									if( targetBoardPiece.GetEdgePieceTransform( i ) == movePosition.transform )
+									{
+										newCoord = new TileCoord( newCoord.x, newCoord.y, i );
+										break;
+									}
+								}
+								
+								var path = CalulatePath( playerPiece.CurrCoord, newCoord );
+								
+								MoveActivePlayer(path);
 							}
 						}
-						
-						var path = CalulatePath( playerPiece.CurrCoord, newCoord );
-						
-						MoveActivePlayer(path);
 					}								
 				}
 			}
