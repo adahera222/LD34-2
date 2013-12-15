@@ -7,6 +7,7 @@ public class BoardPlayArea : MonoBehaviour
 	public BoardPiecePlayLocation TemplatePiecePlayLocation;
 	public List<BoardPiece> TemplateBoardPieces;
 	public List<PlayerPiece> TemplatePlayerPieces;
+	public PlayerScoreBoard TemplatePlayerScoreBoard;
 	public EventCard TemplateEventCard;
 	
 	public Transform EventCardScreenPosition;
@@ -45,6 +46,7 @@ public class BoardPlayArea : MonoBehaviour
 	
 	// Player pieces.
 	private List<PlayerPiece> _playerPieces = new List<PlayerPiece>();
+	private List<PlayerScoreBoard> _playerScoreBoard = new List<PlayerScoreBoard>();
 	
 	// Event cards.
 	private List<EventCard> _eventCards = new List<EventCard>();
@@ -203,16 +205,30 @@ public class BoardPlayArea : MonoBehaviour
 			var playerPieceObject = Object.Instantiate( TemplatePlayerPieces[i].gameObject ) as GameObject;
 			var playerPiece = playerPieceObject.GetComponent< PlayerPiece >();
 			
+			
+			
 			var transformOnTile = GetTransformOnTile( centre, centre, i );
 			if( transformOnTile != null )
 			{
 				playerPiece.transform.parent = _boardPieceField[centre][centre].transform;
 				playerPiece.transform.position = transformOnTile.position;
 				playerPiece.CurrCoord = new TileCoord( centre, centre, i );
-				
+								
 				_playerPieces.Add ( playerPiece );
+				
+				var playerScoreObject = Object.Instantiate( TemplatePlayerScoreBoard.gameObject ) as GameObject;
+				var playerScore = playerScoreObject.GetComponent< PlayerScoreBoard >();
+				playerScore.PlayerPiece = playerPiece;
+				
+				playerScore.transform.parent = PlayerScorePositions[i].transform;
+				playerScore.transform.localPosition = Vector3.zero;
+				playerScore.transform.localRotation = Quaternion.identity;
+				
+				_playerScoreBoard.Add ( playerScore );
 			}
 		}
+		
+		_playerScoreBoard[0].SetActive();
 	}
 	
 	void ShufflePieces()
@@ -338,9 +354,15 @@ public class BoardPlayArea : MonoBehaviour
 			{
 				// Funky animation bro!
 				_playAreaState = PlayAreaState.PlaceNewTile;
-			
+				
+				// Deactivate.
+				_playerScoreBoard[ _activePlayerIndex ].SetInactive();
+				
 				// Player.
 				_activePlayerIndex = ( _activePlayerIndex + 1 ) % 4;
+				
+				// Activate.
+				_playerScoreBoard[ _activePlayerIndex ].SetActive();
 			}
 			break;
 		}
