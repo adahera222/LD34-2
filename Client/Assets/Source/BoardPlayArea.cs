@@ -200,7 +200,26 @@ public class BoardPlayArea : MonoBehaviour
 						var boardPiece = rayHit.collider.gameObject.GetComponent< BoardPiecePlayLocation >();
 						PlayPiece( boardPiece.X, boardPiece.Y, null );
 						
-						_playAreaState = PlayAreaState.MovePlayer;
+						// Check that we can make a move.
+						bool canMove = false;
+						var fromCoord = _playerPieces[ _activePlayerIndex ].CurrCoord;//.transform.parent.GetComponent< BoardPiece >();
+						for( int i = 0; i < 4; ++i )
+						{
+							if( IsValidMoveSingleStep( fromCoord, i, false ) != null )	
+							{
+								canMove = true;
+							}						
+						}
+					
+						if(canMove)
+						{
+							_playAreaState = PlayAreaState.MovePlayer;
+						}
+						else
+						{
+							_playAreaState = PlayAreaState.NextTurn;
+						}
+
 					}
 				}
 			}
