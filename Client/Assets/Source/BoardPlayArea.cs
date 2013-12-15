@@ -926,12 +926,4 @@ public class BoardPlayArea : MonoBehaviour
 		
 		return fromCoord;
 	}
-	
-	void OnGUI()
-	{
-		var rect = new Rect( 32.0f, 32.0f, 256.0f, 32.0f );
-		GUI.TextField( rect, string.Format ( "Player {0}'s turn.", _activePlayerIndex + 1 ) );
-	}
-	
-	
 }

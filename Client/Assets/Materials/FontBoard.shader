@@ -5,7 +5,7 @@ Properties {
 } 
 
 SubShader { 
-   Tags { "Queue"="Transparent" "IgnoreProjector"="True" "RenderType"="Transparent" } 
+   Tags { "Queue"="Overlay" "IgnoreProjector"="True" "RenderType"="Transparent" } 
    Lighting Off Cull Off ZWrite Off Fog { Mode Off } 
    Blend SrcAlpha OneMinusSrcAlpha 
    Pass { 
