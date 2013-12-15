@@ -25,9 +25,10 @@ public class BoardPlayArea : MonoBehaviour
 	public enum PlayAreaState
 	{
 		BeginTurn,
+		ShowNewEventCard,
+		WaitNewEventCard,
 		PlaceNewTile,
 		MovePlayer,
-		CalculateScoring,
 		NextTurn,
 		PlayerWon
 	}
@@ -39,6 +40,8 @@ public class BoardPlayArea : MonoBehaviour
 	public float MoveHeightForReturnTile = 2.0f;
 	
 	private PlayAreaState _playAreaState = PlayAreaState.BeginTurn;
+	
+	private float _timer = 0.0f;
 	
 	// Pieces in pile to select from.
 	private List<BoardPiece> _boardPiecePile = new List<BoardPiece>();
@@ -59,6 +62,9 @@ public class BoardPlayArea : MonoBehaviour
 		
 	// Active player index.
 	private int _activePlayerIndex = 0;
+	
+	// event card.
+	private bool _needNewEventCard = true;
 	
 	// Use this for initialization
 	void Start ()
@@ -145,10 +151,7 @@ public class BoardPlayArea : MonoBehaviour
 			eventCard.transform.position = EventCardPilePosition.position;
 			eventCard.transform.rotation = EventCardPilePosition.rotation;
 		}
-		
-		// Reveal event card.
-		RevealEventCard();
-		
+				
 		// Create board piece play locations.
 		int centre = Size / 2;
 		for( int y = -1; y <= Size; ++y )
@@ -267,6 +270,8 @@ public class BoardPlayArea : MonoBehaviour
 	// Update is called once per frame
 	void Update ()
 	{
+		_timer -= Time.deltaTime;
+		
 		switch( _playAreaState )
 		{
 		case PlayAreaState.BeginTurn:
@@ -283,6 +288,33 @@ public class BoardPlayArea : MonoBehaviour
 			{
 				var glower = _boardPiecePlayLocations[i].GetComponentInChildren<Glower> ();
 				glower.GlowTarget = 2.0f;
+			}
+			
+			if( _needNewEventCard )
+			{
+				_playAreaState = PlayAreaState.ShowNewEventCard;
+			}
+		}
+		break;
+			
+		case PlayAreaState.ShowNewEventCard:
+		{
+			_playAreaState = PlayAreaState.WaitNewEventCard;
+			_needNewEventCard = false;
+			RevealEventCard();
+		}
+		break;
+			
+		case PlayAreaState.WaitNewEventCard:
+		{
+			if(_timer < 0.0f )
+			{
+				if( _eventCardActive )
+				{
+					var objectMover = _eventCardActive.GetComponent< ObjectMover >();
+					objectMover.Move( EventCardRevealPosition.position, EventCardRevealPosition.rotation, MoveHeightForReturnTile, null );
+					_playAreaState = PlayAreaState.PlaceNewTile;
+				}
 			}
 		}
 		break;
@@ -399,8 +431,7 @@ public class BoardPlayArea : MonoBehaviour
 										particleSystem.Emit(25);
 									}
 								
-									// enw card.
-									RevealEventCard();
+									_needNewEventCard = true;
 								}
 							}
 
@@ -416,7 +447,6 @@ public class BoardPlayArea : MonoBehaviour
 			ClearPathfinding();
 			SetupPathGlow();
 
-			// Funky animation bro!
 			_playAreaState = PlayAreaState.BeginTurn;
 		
 			//
@@ -469,7 +499,7 @@ public class BoardPlayArea : MonoBehaviour
 		
 		var objectMover = newEventCard.GetComponent< ObjectMover >();
 		
-		objectMover.Move( EventCardRevealPosition.position, EventCardRevealPosition.rotation, MoveHeightForNewTile, null );
+		objectMover.Move( this.EventCardScreenPosition.position, EventCardScreenPosition.rotation, MoveHeightForNewTile, null );
 		
 		
 		if( _eventCardActive )
@@ -480,6 +510,8 @@ public class BoardPlayArea : MonoBehaviour
 		}
 		
 		_eventCardActive = newEventCard;
+		
+		_timer = 4.0f;
 	}
 	
 	// Play top piece to somewhere.
@@ -697,11 +729,27 @@ public class BoardPlayArea : MonoBehaviour
 				bool shouldGlow = false;
 				for( int i = 0; i < 4; ++i )
 				{
+					var edgePieceTransform = _boardPieceField[x][y].GetEdgePieceTransform(i);
 					if( _boardPieceField[x][y].PathNodes[i].HasVisited )
 					{
 						shouldGlow = true;
-						break;
+						
+						if(edgePieceTransform != null)
+						{
+							var particleSystem = edgePieceTransform.GetComponentInChildren<ParticleSystem>();
+							particleSystem.enableEmission = true;
+							particleSystem.Play();
+						}
 					}										
+					else
+					{
+						if(edgePieceTransform != null)
+						{
+							var particleSystem = edgePieceTransform.GetComponentInChildren<ParticleSystem>();
+							particleSystem.enableEmission = false;
+							particleSystem.Stop();
+						}
+					}
 				}
 			
 				if( shouldGlow )
