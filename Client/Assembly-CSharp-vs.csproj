@@ -50,6 +50,7 @@
      <Compile Include="Assets\Source\EnumFlagsAttribute.cs" />
      <Compile Include="Assets\Source\EventCard.cs" />
      <Compile Include="Assets\Source\EventPiece.cs" />
+     <Compile Include="Assets\Source\Glower.cs" />
      <Compile Include="Assets\Source\LAGClient.cs" />
      <Compile Include="Assets\Source\Layers.cs" />
      <Compile Include="Assets\Source\ObjectMover.cs" />

@@ -43,6 +43,8 @@ public class BoardPlayArea : MonoBehaviour
 	// Pieces in pile to select from.
 	private List<BoardPiece> _boardPiecePile = new List<BoardPiece>();
 	
+	private List<BoardPiecePlayLocation> _boardPiecePlayLocations = new List<BoardPiecePlayLocation>();
+	
 	// Played pieces.
 	private BoardPiece[][] _boardPieceField = null;
 	
@@ -166,6 +168,25 @@ public class BoardPlayArea : MonoBehaviour
 					boardPiece.Y = y;
 					boardPiece.transform.parent = transform;
 					boardPiece.transform.localPosition = GetPiecePosition( x, y );
+					
+					if( x == -1 )
+					{
+						boardPiece.transform.rotation = Quaternion.Euler( new Vector3( 0.0f, 270.0f, 0.0f ) );
+					}
+					else if( x == Size )
+					{
+						boardPiece.transform.rotation = Quaternion.Euler( new Vector3( 0.0f, 90.0f, 0.0f ) );
+					}
+					else if( y == -1 )
+					{
+						boardPiece.transform.rotation = Quaternion.Euler( new Vector3( 0.0f, 180.0f, 0.0f ) );
+					}
+					else if( y == Size )
+					{
+						boardPiece.transform.rotation = Quaternion.Euler( new Vector3( 0.0f, 0.0f, 0.0f ) );
+					}
+					
+					_boardPiecePlayLocations.Add(boardPiece);
 				}
 			}
 		}
@@ -257,6 +278,12 @@ public class BoardPlayArea : MonoBehaviour
 			
 			ClearPathfinding();
 			SetupPathGlow();
+			
+			for(int i = 0; i < _boardPiecePlayLocations.Count; ++i)
+			{
+				var glower = _boardPiecePlayLocations[i].GetComponentInChildren<Glower> ();
+				glower.GlowTarget = 2.0f;
+			}
 		}
 		break;
 		
@@ -299,6 +326,12 @@ public class BoardPlayArea : MonoBehaviour
 					else
 					{
 						_playAreaState = PlayAreaState.NextTurn;
+					}
+					
+					for(int i = 0; i < _boardPiecePlayLocations.Count; ++i)
+					{
+						var glower = _boardPiecePlayLocations[i].GetComponentInChildren<Glower> ();
+						glower.GlowTarget = 0.0f;
 					}
 
 				}
@@ -359,6 +392,12 @@ public class BoardPlayArea : MonoBehaviour
 								{
 									// Increment score.
 									_playerPieces[ _activePlayerIndex ].Score += boardPiece.ScoreValue;
+									
+									var particleSystem = _playerScoreBoard[ _activePlayerIndex ].GetComponentInChildren< ParticleSystem >();
+									if( particleSystem != null )
+									{
+										particleSystem.Emit(25);
+									}
 								
 									// enw card.
 									RevealEventCard();
@@ -667,11 +706,11 @@ public class BoardPlayArea : MonoBehaviour
 			
 				if( shouldGlow )
 				{
-					_boardPieceField[x][y].GlowTarget = 1.0f;
+					_boardPieceField[x][y].Glower.GlowTarget = 1.0f;
 				}
 				else
 				{
-					_boardPieceField[x][y].GlowTarget = 0.0f;
+					_boardPieceField[x][y].Glower.GlowTarget = 0.0f;
 				}
 			}
 		}

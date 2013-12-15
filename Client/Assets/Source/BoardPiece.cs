@@ -14,15 +14,10 @@ public class BoardPiece : MonoBehaviour
 	
 	private int _id = 0;
 	
-	public float GlowTarget = 0.0f;
-	
-	private float _glowLerp = 0.0f;
-
-	
+	public Glower Glower = null;
 	public EventPiece EventPiece = null;	
 	
-	public MeshRenderer GlowMesh = null;
-	
+
 	public bool CanHaveEvent = false;
 	
 	public TileCoord Coord;
@@ -122,20 +117,7 @@ public class BoardPiece : MonoBehaviour
 	// Update is called once per frame
 	void Update ()
 	{
-		_glowLerp = ( _glowLerp * 0.9f ) + ( GlowTarget * 0.1f );
-		
-		if( _glowLerp < 0.01f )
-		{
-			GlowMesh.enabled = false;
-		}
-		else
-		{
-			GlowMesh.enabled = true;
-			
-			float glow = ( Mathf.Abs ( Mathf.Sin( Time.time * 1.5f ) ) ) * 0.35f * _glowLerp;
-			
-			GlowMesh.materials[0].SetColor ( "_TintColor", new Color( 0.0f, glow, glow, glow ) );
-		}
+
 	}
 	
 	// Setup piece with play area and position.
