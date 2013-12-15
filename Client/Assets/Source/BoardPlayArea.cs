@@ -7,6 +7,7 @@ public class BoardPlayArea : MonoBehaviour
 	public BoardPiecePlayLocation TemplatePiecePlayLocation;
 	public List<BoardPiece> TemplateBoardPieces;
 	public List<PlayerPiece> TemplatePlayerPieces;
+	public EventCard TemplateEventCard;
 	
 	public Transform EventCardScreenPosition;
 	public Transform EventCardPilePosition;
@@ -45,10 +46,7 @@ public class BoardPlayArea : MonoBehaviour
 	
 	// Event cards.
 	private List<EventCard> _eventCards = new List<EventCard>();
-	
-	// Pile rotation.
-	private Quaternion _pileRotation = Quaternion.Euler( new Vector3( 180.0f, 0.0f, 0.0f ) );
-	
+		
 	// Active player index.
 	private int _activePlayerIndex = 0;
 	
@@ -56,7 +54,6 @@ public class BoardPlayArea : MonoBehaviour
 	void Start ()
 	{		
 		Random.seed = 0; // hard code seed for now.
-
 		int id = 0;
 		
 		// Create board pieces.
@@ -79,13 +76,13 @@ public class BoardPlayArea : MonoBehaviour
 				var position = GetPilePosition();
 				boardPiece.transform.parent = transform;
 				boardPiece.transform.localPosition = position;			
-				boardPiece.transform.localRotation = _pileRotation;
+				boardPiece.transform.rotation = TilePilePosition.rotation;
 			}
 		}
 		
 		// Shuffle pieces.
 		ShufflePieces();
-				
+		
 		// Find start piece and remove.
 		BoardPiece startPiece = null;
 		for( int i = 0; i < _boardPiecePile.Count; ++i )
@@ -99,6 +96,45 @@ public class BoardPlayArea : MonoBehaviour
 		}
 		
 		startPiece.transform.localRotation = Quaternion.identity;
+		
+		// Create cards.
+		HashSet<int> usedEvents = new HashSet<int>();
+		for( int i = 0; i < 12; ++i )
+		{
+			int[] events = new int[3]
+			{
+				-1, -1, -1
+			};
+			
+			for( int j = 0; j < 3; ++j )
+			{
+				for( int k = 0; k < _boardPiecePile.Count; ++k )		
+				{
+					var boardPiece = _boardPiecePile[ k ];
+					if( boardPiece.EventPiece != null )
+					{
+						if( boardPiece.ScoreValue == j + 1 )
+						{
+							if( usedEvents.Contains( boardPiece.EventPiece.EventId ) == false )
+							{
+								events[j] = boardPiece.EventPiece.EventId;
+								usedEvents.Add ( boardPiece.EventPiece.EventId );
+								break;
+							}	
+						}
+					}
+				}
+			}
+			
+			var eventCardObject = Object.Instantiate( TemplateEventCard.gameObject ) as GameObject;
+			var eventCard = eventCardObject.GetComponent< EventCard >();
+			eventCard.SetupEvents( events, EventTextures );
+			_eventCards.Add ( eventCard );
+			
+			eventCard.transform.parent = this.transform;
+			eventCard.transform.position = EventCardPilePosition.position;
+			eventCard.transform.rotation = EventCardPilePosition.rotation;
+		}
 		
 		// Create board piece play locations.
 		int centre = Size / 2;
@@ -150,7 +186,7 @@ public class BoardPlayArea : MonoBehaviour
 		{
 			BoardPiece boardPiece = _boardPiecePile[0];
 			var objectMover = boardPiece.GetComponent< ObjectMover >();
-			objectMover.Move(GetPilePosition() + new Vector3( 1.0f, 0.0f, 0.0f ), Quaternion.identity, MoveHeightForNewTile, null);
+			objectMover.Move(TileRevealedPosition.position, TileRevealedPosition.rotation, MoveHeightForNewTile, null);
 		}
 		
 		// Create players.
@@ -306,7 +342,7 @@ public class BoardPlayArea : MonoBehaviour
 	
 	Vector3 GetPilePosition()
 	{
-		return GetPiecePosition( -2, Size / 2 );
+		return TilePilePosition.position;
 	}
 		
 	// Play top piece to somewhere.
@@ -361,7 +397,7 @@ public class BoardPlayArea : MonoBehaviour
 					{
 						position = GetPilePosition();
 						objectMover = boardPieceObject.GetComponent< ObjectMover >();
-						objectMover.Move(position, _pileRotation, MoveHeightForReturnTile, null);
+						objectMover.Move(position, TilePilePosition.rotation, MoveHeightForReturnTile, null);
 
 						_boardPiecePile.Add ( boardPieceObject );						
 					}
@@ -398,7 +434,7 @@ public class BoardPlayArea : MonoBehaviour
 					{
 						position = GetPilePosition();
 						objectMover = boardPieceObject.GetComponent< ObjectMover >();
-						objectMover.Move(position, _pileRotation, MoveHeightForReturnTile, null);
+						objectMover.Move(position, TilePilePosition.rotation, MoveHeightForReturnTile, null);
 
 						_boardPiecePile.Add ( boardPieceObject );						
 					}
@@ -435,7 +471,7 @@ public class BoardPlayArea : MonoBehaviour
 					{
 						position = GetPilePosition();
 						objectMover = boardPieceObject.GetComponent< ObjectMover >();
-						objectMover.Move(position, _pileRotation, MoveHeightForReturnTile, null);
+						objectMover.Move(position, TilePilePosition.rotation, MoveHeightForReturnTile, null);
 
 						_boardPiecePile.Add ( boardPieceObject );						
 					}
@@ -472,7 +508,7 @@ public class BoardPlayArea : MonoBehaviour
 					{
 						position = GetPilePosition();
 						objectMover = boardPieceObject.GetComponent< ObjectMover >();
-						objectMover.Move(position, _pileRotation, MoveHeightForReturnTile, null);
+						objectMover.Move(position, TilePilePosition.rotation, MoveHeightForReturnTile, null);
 
 						_boardPiecePile.Add ( boardPieceObject );						
 					}
@@ -491,7 +527,7 @@ public class BoardPlayArea : MonoBehaviour
 			// Flip over top piece for next move.
 			boardPieceObject = _boardPiecePile[0];
 			objectMover = boardPieceObject.GetComponent< ObjectMover >();
-			objectMover.Move(GetPilePosition() + new Vector3( 1.0f, 0.0f, 0.0f ), Quaternion.identity, MoveHeightForNewTile, null);
+			objectMover.Move(TileRevealedPosition.position, TileRevealedPosition.rotation, MoveHeightForNewTile, null);
 		}
 		
 		// Update player coords.
