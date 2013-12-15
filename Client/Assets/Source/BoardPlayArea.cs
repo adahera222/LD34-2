@@ -46,6 +46,8 @@ public class BoardPlayArea : MonoBehaviour
 	
 	// Event cards.
 	private List<EventCard> _eventCards = new List<EventCard>();
+	
+	private EventCard _eventCardActive = null;
 		
 	// Active player index.
 	private int _activePlayerIndex = 0;
@@ -135,6 +137,9 @@ public class BoardPlayArea : MonoBehaviour
 			eventCard.transform.position = EventCardPilePosition.position;
 			eventCard.transform.rotation = EventCardPilePosition.rotation;
 		}
+		
+		// Reveal event card.
+		RevealEventCard();
 		
 		// Create board piece play locations.
 		int centre = Size / 2;
@@ -344,7 +349,27 @@ public class BoardPlayArea : MonoBehaviour
 	{
 		return TilePilePosition.position;
 	}
+	
+	public void RevealEventCard()
+	{
+		var newEventCard = _eventCards[0];	
+		_eventCards.RemoveAt(0);
 		
+		var objectMover = newEventCard.GetComponent< ObjectMover >();
+		
+		objectMover.Move( EventCardRevealPosition.position, EventCardRevealPosition.rotation, MoveHeightForNewTile, null );
+		
+		
+		if( _eventCardActive )
+		{
+			objectMover = _eventCardActive.GetComponent< ObjectMover >();
+			objectMover.Move( EventCardPilePosition.position, EventCardPilePosition.rotation, MoveHeightForReturnTile, null );
+			_eventCards.Add(_eventCardActive);
+		}
+		
+		_eventCardActive = newEventCard;
+	}
+	
 	// Play top piece to somewhere.
 	public void PlayPiece(int x, int y, BoardPiece piece)
 	{

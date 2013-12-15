@@ -64,6 +64,7 @@
      <Compile Include="Assets\Source\UnityHTTP\Response.cs" />
      <Compile Include="Assets\Source\UnityHTTP\ResponseCallbackDispatcher.cs" />
      <Compile Include="Assets\Source\UnityHTTP\external\JSON.cs" />
+     <None Include="Assets\Materials\FontBoard.shader" />
  <Reference Include="Ionic.Zlib">
  <HintPath>Assets\Source\UnityHTTP\external\Ionic.Zlib.dll</HintPath>
  </Reference>

@@ -45,6 +45,7 @@
   </ItemGroup>
   <ItemGroup>
      <Compile Include="Assets\Editor\Source\EnumFlagsAttributeDrawer.cs" />
+     <None Include="Assets\Materials\FontBoard.shader" />
  <Reference Include="Ionic.Zlib">
  <HintPath>Assets\Source\UnityHTTP\external\Ionic.Zlib.dll</HintPath>
  </Reference>
