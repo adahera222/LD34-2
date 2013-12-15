@@ -1,6 +1,20 @@
 ﻿<Properties>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Source\EventCard.cs">
+    <Files>
+      <File FileName="Assets\Source\BoardPlayArea.cs" Line="430" Column="11" />
+      <File FileName="Assets\Source\Layers.cs" Line="1" Column="1" />
+      <File FileName="Assets\Source\PlayerPiece.cs" Line="1" Column="1" />
+      <File FileName="Assets\Source\EventPiece.cs" Line="1" Column="1" />
+      <File FileName="Assets\Source\EventCard.cs" Line="50" Column="2" />
+      <File FileName="Assets\Source\EnumFlagsAttribute.cs" Line="1" Column="1" />
+      <File FileName="Assets\Materials\FontBoard.shader" Line="1" Column="1" />
+      <File FileName="Assets\Source\PlayerScoreBoard.cs" Line="1" Column="1" />
+      <File FileName="Assets\Source\BoardPiece.cs" Line="1" Column="1" />
+      <File FileName="Assets\Source\BoardPiecePlayLocation.cs" Line="1" Column="1" />
+      <File FileName="Assets\Source\Glower.cs" Line="1" Column="1" />
+      <File FileName="Assets\Source\Rotator.cs" Line="28" Column="1" />
+    </Files>
     <Pads>
       <Pad Id="MonoDevelop.Debugger.WatchPad">
         <State>

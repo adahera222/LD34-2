@@ -58,7 +58,9 @@
      <Compile Include="Assets\Source\PieceMovePosition.cs" />
      <Compile Include="Assets\Source\PlayerPiece.cs" />
      <Compile Include="Assets\Source\PlayerScoreBoard.cs" />
+     <Compile Include="Assets\Source\Rotator.cs" />
      <Compile Include="Assets\Source\TileCoord.cs" />
+     <Compile Include="Assets\Source\TitleScene.cs" />
      <Compile Include="Assets\Source\UnityHTTP\CookieJar.cs" />
      <Compile Include="Assets\Source\UnityHTTP\DiskCache.cs" />
      <Compile Include="Assets\Source\UnityHTTP\Request.cs" />

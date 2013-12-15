@@ -1028,4 +1028,19 @@ public class BoardPlayArea : MonoBehaviour
 		
 		return fromCoord;
 	}
+	
+	void OnGUI()
+	{
+		var width = Camera.main.pixelWidth;
+		var height = Camera.main.pixelHeight;
+		
+		var startGameWidth = 128.0f;	
+		var startGameHeight = 32.0f;
+		var startGameRect = new Rect( width - startGameWidth, height  - startGameHeight, startGameWidth, startGameHeight ); 
+				
+		if( GUI.Button( startGameRect, "Quit Game!" ) )
+		{
+			Application.LoadLevel( "TitleScene" );
+		}
+	}
 }
