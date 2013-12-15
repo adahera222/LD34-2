@@ -15,7 +15,7 @@ public class BoardPiece : MonoBehaviour
 	private int _id = 0;
 	
 	
-	public int EventId = -1;	
+	public EventPiece EventPiece = null;	
 	
 	public bool CanHaveEvent = false;
 	
@@ -40,8 +40,9 @@ public class BoardPiece : MonoBehaviour
 	
 	public bool IsStart = false;
 	public int TotalInDeck = 0;
-	public int TotalWithEventsInDeck = 0;	
+	public int TotalWithEventsInDeck = 0;
 	
+	public int ScoreValue = 0;
 	
 	#region Path finding.
 	public PathNode[] PathNodes = new PathNode[4];
@@ -55,7 +56,7 @@ public class BoardPiece : MonoBehaviour
 	}
 	
 	#endregion
-	
+		
 	public Connectivity GetConnectivity(int index)
 	{
 		switch( index )
@@ -141,13 +142,11 @@ public class BoardPiece : MonoBehaviour
 	public void SetupEvent( int id, EventPiece templateEventObject, Texture2D eventTexture )
 	{
 		var gameObject = Object.Instantiate( templateEventObject.gameObject ) as GameObject;
-		var eventPiece = gameObject.GetComponentInChildren< EventPiece >();
-		eventPiece.SetTexture( eventTexture );		
+		EventPiece = gameObject.GetComponentInChildren< EventPiece >();
+		EventPiece.SetTexture( eventTexture, id );		
 		
-		eventPiece.transform.parent = this.transform;
-		eventPiece.transform.position = this.transform.position;
-		eventPiece.transform.rotation = Quaternion.Euler( new Vector3( 180.0f, 0.0f, 0.0f ) );
-		
+		EventPiece.transform.parent = this.transform;
+		EventPiece.transform.position = this.transform.position;
 	}
 	
 	void OnDrawGizmos()

@@ -8,6 +8,12 @@ public class BoardPlayArea : MonoBehaviour
 	public List<BoardPiece> TemplateBoardPieces;
 	public List<PlayerPiece> TemplatePlayerPieces;
 	
+	public Transform EventCardScreenPosition;
+	public Transform EventCardPilePosition;
+	public Transform EventCardRevealPosition;
+	public Transform TilePilePosition;
+	public Transform TileRevealedPosition;
+	
 	public EventPiece TemplateEventObject;
 	
 	public List<Texture2D> EventTextures = new List<Texture2D>();
@@ -37,6 +43,9 @@ public class BoardPlayArea : MonoBehaviour
 	// Player pieces.
 	private List<PlayerPiece> _playerPieces = new List<PlayerPiece>();
 	
+	// Event cards.
+	private List<EventCard> _eventCards = new List<EventCard>();
+	
 	// Pile rotation.
 	private Quaternion _pileRotation = Quaternion.Euler( new Vector3( 180.0f, 0.0f, 0.0f ) );
 	
@@ -51,6 +60,7 @@ public class BoardPlayArea : MonoBehaviour
 		int id = 0;
 		
 		// Create board pieces.
+		int eventId = 0;
 		foreach( var templateBoardPiece in TemplateBoardPieces)
 		{
 			for( int i = 0; i < templateBoardPiece.TotalInDeck; ++i )
@@ -59,7 +69,12 @@ public class BoardPlayArea : MonoBehaviour
 				var boardPiece = boardPieceObject.GetComponent< BoardPiece >();
 				_boardPiecePile.Add( boardPiece );
 				boardPiece.SetupPiece( this, id++ );
-				boardPiece.CanHaveEvent = i < boardPiece.TotalWithEventsInDeck;
+				
+				if( i < boardPiece.TotalWithEventsInDeck )
+				{
+					boardPiece.SetupEvent( eventId, TemplateEventObject, EventTextures[ eventId ] );
+					++eventId;
+				}
 			
 				var position = GetPilePosition();
 				boardPiece.transform.parent = transform;
@@ -70,23 +85,7 @@ public class BoardPlayArea : MonoBehaviour
 		
 		// Shuffle pieces.
 		ShufflePieces();
-		
-		// Put events on cards.
-		int eventId = 0;
-		for( int i = 0; i < _boardPiecePile.Count; ++i )
-		{
-			var boardPiece = _boardPiecePile[ i ];
-			
-			if( boardPiece.CanHaveEvent )
-			{
-				boardPiece.SetupEvent( eventId, TemplateEventObject, EventTextures[ eventId ] );
-				++eventId;
-			}
-		}
-		
-		// Shuffle again.
-		ShufflePieces();
-		
+				
 		// Find start piece and remove.
 		BoardPiece startPiece = null;
 		for( int i = 0; i < _boardPiecePile.Count; ++i )
@@ -511,7 +510,7 @@ public class BoardPlayArea : MonoBehaviour
 				var transformOnTile = _boardPieceField[centre][centre].GetEdgePieceTransform( i );
 				var objectMover = playerPiece.gameObject.GetComponent< ObjectMover >();
 				objectMover.Move( transformOnTile.position, Quaternion.identity, 2.0f, null );
-				playerPiece.CurrCoord =  new TileCoord( 0, 0, i );
+				playerPiece.CurrCoord =  new TileCoord( centre , centre , i );
 			}
 		}
 	}
