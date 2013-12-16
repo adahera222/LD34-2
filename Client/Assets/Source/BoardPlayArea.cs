@@ -14,8 +14,13 @@ public class BoardPlayArea : MonoBehaviour
 	public Transform EventCardScreenPosition;
 	public Transform EventCardPilePosition;
 	public Transform EventCardRevealPosition;
+	public Transform ScoreScreenScreenPosition;
+	public Transform ScoreScreenTablePosition;
 	public Transform TilePilePosition;
 	public Transform TileRevealedPosition;
+	
+	public TextMesh ScoreScreenText;
+	public ObjectMover ScoreScreen;
 	
 	public List<Transform> PlayerScorePositions = new List<Transform>();
 	
@@ -514,9 +519,20 @@ public class BoardPlayArea : MonoBehaviour
 			_playAreaState = PlayAreaState.BeginTurn;
 		
 			//
-			if( _playerPieces[ _activePlayerIndex ].Score >= 10 )
+			if( _playerPieces[ _activePlayerIndex ].Score >= 1 )
 			{
 				_playAreaState = PlayAreaState.PlayerWon;
+				
+				if( _activePlayerIndex == 0 )
+				{
+					ScoreScreenText.text = "You Win!";
+				}	
+				else
+				{
+					ScoreScreenText.text = "You Lose!";	
+				}
+				
+				ScoreScreen.Move ( ScoreScreenScreenPosition.transform.position, ScoreScreenScreenPosition.transform.rotation, 2.0f, null );
 				break;
 			}
 			
