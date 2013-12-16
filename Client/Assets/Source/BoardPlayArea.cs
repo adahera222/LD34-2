@@ -75,7 +75,7 @@ public class BoardPlayArea : MonoBehaviour
 	// Use this for initialization
 	void Start ()
 	{		
-		Random.seed = 0; // hard code seed for now.
+		//Random.seed = 0; // hard code seed for now.
 		int id = 0;
 		
 		// Create board pieces.

@@ -10,7 +10,7 @@ public class TitleScene : MonoBehaviour
 		"further. If something isn’t done now the whole thing will collapse into a big puddle of wibbly-\n" +
 		"wobbly, timey-wimey at the bottom of a worm hole!\n\n" +
 		"That’s where you come in! \n\n" +
-		"You only get one chance to put things right. In order to win, you need to fix 10 points worth \n" +
+		"You only get one chance to put things right. In order to win, you need to fix 8 points worth \n" +
 		"of important historical events before the wormhole divertor known as the tile pile runs out, \n" +
 		"but watch out, other time travelers will try to steal your glory!\n\n" +
 		"Laid out before you is all of time and space, but you can’t access it all the time or from the \n" +

@@ -20,7 +20,7 @@ public class EventCard : MonoBehaviour
 		"Death of Sir Winston Churchill.",
 		"First artificial satellite\nlaunched by Russian.",
 		"World War II begins.",
-		"Hitler becomes the Chanceller of\nGermany.",
+		"Hitler becomes the Chancellor of\nGermany.",
 		"Beginning of World War I.",
 		"Death of Nelson Mandela.",
 		"Euro becomes the official currency\nof 12 European countries.",
