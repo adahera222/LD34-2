@@ -15,6 +15,7 @@ public class ObjectMover : MonoBehaviour
 	private Quaternion _targetRotation = Quaternion.identity;
 	private float _peakHeight = 0.0f;
 	private OnMoveComplete _onMoveComplete = null;
+	private float _speed = 1.5f;
 	
 	// Use this for initialization
 	void Start ()
@@ -28,14 +29,22 @@ public class ObjectMover : MonoBehaviour
 		// Handle moving of objects.
 		if( _moveDelta < 1.0f )
 		{
-			float positionDelta = Mathf.SmoothStep( 0.0f, 1.0f, _moveDelta );
-			float rotationDelta = Mathf.SmoothStep( 0.0f, 1.0f, Mathf.Clamp01( _moveDelta * RotationMultiplier ) );
+			float positionDelta = Mathf.SmoothStep( 0.0f, 1.0f, _moveDelta * _speed );
+			float rotationDelta = Mathf.SmoothStep( 0.0f, 1.0f, Mathf.Clamp01( _moveDelta * RotationMultiplier * _speed  ) );
 			
 			transform.position = Vector3.Lerp( _originalPosition, _targetPosition, positionDelta ) + new Vector3( 0.0f, Mathf.Sin ( positionDelta * Mathf.PI ) * _peakHeight, 0.0f );
 			transform.rotation = Quaternion.Slerp( _originalRotation, _targetRotation, rotationDelta );
 			
 			// Increase move delta.
 			_moveDelta += Time.deltaTime;
+			
+			if( _moveDelta >= 1.0f )
+			{
+				if( _onMoveComplete != null )
+				{
+					_onMoveComplete();
+				}
+			}
 		}
 		else
 		{

@@ -13,6 +13,7 @@ public class BoardPlayArea : MonoBehaviour
 	
 	public Transform EventCardScreenPosition;
 	public Transform EventCardPilePosition;
+	public Transform EventCardDiscardPosition;
 	public Transform EventCardRevealPosition;
 	public Transform ScoreScreenScreenPosition;
 	public Transform ScoreScreenTablePosition;
@@ -38,6 +39,12 @@ public class BoardPlayArea : MonoBehaviour
 		NextTurn,
 		PlayerWon
 	}
+	
+	public AudioClip PlacePieceSound;
+	public AudioClip ScorePointSound;
+	public AudioClip PickupCardSound;
+	public AudioClip PlaceCardSound;
+	public AudioClip NextPlayerSound;
 	
 	public int Size = 7;	
 	
@@ -307,8 +314,11 @@ public class BoardPlayArea : MonoBehaviour
 			
 			if( playerPiece.isAI )
 			{
-				_timer = 2.0f;
+				_timer = 1.0f;
 			}
+			
+			audio.clip = NextPlayerSound;
+			audio.Play();
 		}
 		break;
 			
@@ -360,7 +370,7 @@ public class BoardPlayArea : MonoBehaviour
 					var randomIdx = Random.Range( 0, _boardPiecePlayLocations.Count );
 					boardPiece = _boardPiecePlayLocations[randomIdx];
 				
-					_timer = 2.0f;
+					_timer = 1.0f;
 				}
 			}
 			
@@ -395,6 +405,7 @@ public class BoardPlayArea : MonoBehaviour
 				else
 				{
 					_playAreaState = PlayAreaState.NextTurn;
+					_timer = 0.25f;
 				}
 				
 				for(int i = 0; i < _boardPiecePlayLocations.Count; ++i)
@@ -513,34 +524,44 @@ public class BoardPlayArea : MonoBehaviour
 
 		case PlayAreaState.NextTurn:
 		{
-			ClearPathfinding();
-			SetupPathGlow();
-
-			_playAreaState = PlayAreaState.BeginTurn;
-		
-			//
-			if( _playerPieces[ _activePlayerIndex ].Score >= 1 )
+			if( _timer < 0.0f )
 			{
-				_playAreaState = PlayAreaState.PlayerWon;
-				
-				if( _activePlayerIndex == 0 )
+				ClearPathfinding();
+				SetupPathGlow();
+	
+				_playAreaState = PlayAreaState.BeginTurn;
+			
+				//
+				if( _playerPieces[ _activePlayerIndex ].Score >= 8 )
 				{
-					ScoreScreenText.text = "You Win!";
-				}	
-				else
-				{
-					ScoreScreenText.text = "You Lose!";	
+					_playAreaState = PlayAreaState.PlayerWon;
+					
+					if( _activePlayerIndex == 0 )
+					{
+						ScoreScreenText.text = "You Win!";
+					}	
+					else
+					{
+						if( _activePlayerIndex == 0 )
+						{
+							ScoreScreenText.text = string.Format ( "You Win!" );	
+						}
+						else
+						{
+							ScoreScreenText.text = string.Format ( "Player {0} Wins!", _activePlayerIndex + 1 );	
+						}
+					}
+					
+					ScoreScreen.Move ( ScoreScreenScreenPosition.transform.position, ScoreScreenScreenPosition.transform.rotation, 2.0f, null );
+					break;
 				}
 				
-				ScoreScreen.Move ( ScoreScreenScreenPosition.transform.position, ScoreScreenScreenPosition.transform.rotation, 2.0f, null );
-				break;
+				// Deactivate.
+				_playerScoreBoard[ _activePlayerIndex ].SetInactive();
+				
+				// Player.
+				_activePlayerIndex = ( _activePlayerIndex + 1 ) % 4;
 			}
-			
-			// Deactivate.
-			_playerScoreBoard[ _activePlayerIndex ].SetInactive();
-			
-			// Player.
-			_activePlayerIndex = ( _activePlayerIndex + 1 ) % 4;
 		}
 		break;
 		
@@ -554,6 +575,9 @@ public class BoardPlayArea : MonoBehaviour
 	
 	void MoveActivePlayer( List<TileCoord> path )
 	{
+		audio.clip = PlacePieceSound;
+		audio.Play();
+
 		var playerPiece = _playerPieces[ _activePlayerIndex ];
 		if( path != null )
 		{
@@ -569,6 +593,8 @@ public class BoardPlayArea : MonoBehaviour
 				objectMover.Move( transformOnTile.position, Quaternion.identity, 2.0f, null );
 				playerPiece.CurrCoord = lastPos;
 				_playAreaState = PlayAreaState.NextTurn;
+				_timer = 0.25f;
+
 			
 				if( boardPiece.EventPiece != null )
 				{
@@ -613,6 +639,14 @@ public class BoardPlayArea : MonoBehaviour
 	
 	public void RevealEventCard()
 	{
+		if( _eventCards.Count == 0)
+		{
+			_playAreaState = PlayAreaState.PlayerWon;
+					
+			ScoreScreenText.text = "You Lose!";	
+					
+			ScoreScreen.Move ( ScoreScreenScreenPosition.transform.position, ScoreScreenScreenPosition.transform.rotation, 2.0f, null );
+		}
 		var newEventCard = _eventCards[0];	
 		_eventCards.RemoveAt(0);
 		
@@ -624,8 +658,8 @@ public class BoardPlayArea : MonoBehaviour
 		if( _eventCardActive )
 		{
 			objectMover = _eventCardActive.GetComponent< ObjectMover >();
-			objectMover.Move( EventCardPilePosition.position, EventCardPilePosition.rotation, MoveHeightForReturnTile, null );
-			_eventCards.Add(_eventCardActive);
+			objectMover.Move( EventCardDiscardPosition.position, EventCardDiscardPosition.rotation, MoveHeightForReturnTile, null );
+			//_eventCards.Add(_eventCardActive);
 		}
 		
 		_eventCardActive = newEventCard;
@@ -636,6 +670,11 @@ public class BoardPlayArea : MonoBehaviour
 	// Play top piece to somewhere.
 	public void PlayPiece(int x, int y, BoardPiece piece)
 	{
+		audio.clip = PlaceCardSound;
+		audio.Play();
+		audio.clip = PickupCardSound;
+		audio.Play();
+
 		// Grab and move between lists.
 		if( x >= 0 && x < Size &&
 			y >= 0 && y < Size )
@@ -764,7 +803,7 @@ public class BoardPlayArea : MonoBehaviour
 						_boardPiecePile.Add ( boardPieceObject );						
 					}
 				}
-				
+								
 				// Add new piece.
 				boardPieceObject = _boardPiecePile[0];
 				_boardPiecePile.RemoveAt (0);
